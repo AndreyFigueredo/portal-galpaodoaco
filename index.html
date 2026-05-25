@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Comercial — Galpão do Aço</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<style>
+:root {
+  --primary:  #e10600;
+  --primary2: #b80500;
+  --bg:       #f0f0f0;
+  --card:     #ffffff;
+  --text:     #1f2937;
+  --muted:    #6b7280;
+  --border:   #e5e7eb;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif; }
+
+/* ── HEADER ──────────────────────────────────────────── */
+#hdr {
+  position: fixed; top: 0; left: 0; right: 0; height: 70px;
+  background: #fff;
+  border-bottom: 2px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  display: flex; align-items: center;
+  padding: 0 28px;
+  gap: 18px;
+  z-index: 300;
+}
+#hdr-logo {
+  display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+}
+#hdr-logo img { height: 48px; object-fit: contain; }
+#hdr-brand { display: flex; flex-direction: column; gap: 2px; }
+#hdr-brand-name {
+  font-size: 1.05rem; font-weight: 900; letter-spacing: 0.05em;
+  color: var(--primary); text-transform: uppercase; line-height: 1;
+}
+#hdr-brand-sub {
+  font-size: 0.65rem; font-weight: 600; color: var(--muted);
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+#hdr-div { width: 1px; height: 38px; background: var(--border); flex-shrink: 0; }
+#hdr-sep { flex: 1; }
+#hdr-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+#hdr-clock {
+  font-size: 1.45rem; font-weight: 800; letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums; color: var(--text); line-height: 1;
+}
+#hdr-date { font-size: 0.68rem; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; }
+#btn-tv {
+  background: #f3f4f6; border: 1.5px solid var(--border);
+  color: var(--muted); padding: 7px 16px; border-radius: 8px;
+  cursor: pointer; font-size: 0.8rem; font-family: inherit; font-weight: 600;
+  transition: all .2s; white-space: nowrap;
+}
+#btn-tv:hover { background: #fee2e2; color: var(--primary); border-color: var(--primary); }
+
+/* ── TIMER BAR ───────────────────────────────────────── */
+#timer-bar {
+  position: fixed; top: 70px; left: 0; right: 0; height: 4px;
+  background: #f3f4f6; z-index: 299;
+}
+#timer-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #ff6b6b);
+  box-shadow: 0 0 8px rgba(225,6,0,0.4);
+  width: 0%;
+  transition: width 0.25s linear;
+}
+
+/* ── MAIN WRAPPER ────────────────────────────────────── */
+#main {
+  position: fixed;
+  top: 74px; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── SUPPLIER PANEL ──────────────────────────────────── */
+#sup-panel {
+  flex-shrink: 0;
+  padding: 16px 28px 14px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+#sup-top-row {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+#sup-nav { display: flex; gap: 6px; align-items: center; }
+.snav-btn {
+  width: 30px; height: 30px; border-radius: 8px;
+  border: 1.5px solid var(--border); background: #f9fafb;
+  color: var(--muted); cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.snav-btn:hover { border-color: var(--primary); color: var(--primary); background: #fee2e2; }
+
+#sup-counter {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--primary); white-space: nowrap;
+  background: #fee2e2; padding: 3px 12px; border-radius: 999px;
+}
+#sup-transit-label {
+  font-size: 0.68rem; color: var(--muted); font-weight: 600;
+  margin-left: 4px; white-space: nowrap;
+}
+
+#forn-select-wrap {
+  display: flex; align-items: center; gap: 8px; margin-left: auto;
+}
+#forn-select-wrap label {
+  font-size: 0.68rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .08em; white-space: nowrap;
+}
+#forn-select {
+  background: #f9fafb; border: 1.5px solid var(--border);
+  color: var(--text); font-family: inherit; font-size: 0.8rem; font-weight: 700;
+  padding: 5px 10px; border-radius: 8px; cursor: pointer;
+  max-width: 280px; outline: none;
+  transition: border-color .2s, background .2s;
+}
+#forn-select:hover, #forn-select:focus { border-color: var(--primary); background: #fff; }
+#forn-select option { background: #fff; color: var(--text); }
+
+#sup-nome {
+  font-size: clamp(1.7rem, 3vw, 2.7rem);
+  font-weight: 900; line-height: 1.1; letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 10px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85vw;
+}
+
+#sup-tags {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.stag {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.8rem; color: var(--muted);
+}
+.stag b { color: var(--text); font-weight: 700; }
+.stag-sep { width: 4px; height: 4px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+
+/* ── PROGRESS BAR ────────────────────────────────────── */
+#prog-row {
+  display: flex; align-items: center; gap: 14px;
+}
+#prog-track {
+  flex: 1; max-width: 520px; height: 10px;
+  background: #f3f4f6; border-radius: 20px;
+  overflow: visible; position: relative;
+}
+#prog-bar {
+  height: 100%; border-radius: 20px;
+  transition: width 1s cubic-bezier(.4,0,.2,1), background .5s;
+  position: relative;
+}
+#prog-truck {
+  position: absolute; right: -18px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 22px; line-height: 1;
+  filter: drop-shadow(0 0 6px currentColor);
+  transition: filter .5s;
+  pointer-events: none; user-select: none;
+}
+#prog-pct {
+  font-size: 0.9rem; font-weight: 800; min-width: 44px; text-align: right;
+}
+#prog-label {
+  font-size: 0.78rem; color: var(--muted); font-weight: 500; white-space: nowrap;
+}
+
+/* ── DOTS ────────────────────────────────────────────── */
+#sup-dots {
+  display: flex; align-items: center; justify-content: center;
+  gap: 7px; padding: 7px 0; flex-shrink: 0;
+  background: var(--bg);
+}
+.sdot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #d1d5db; cursor: pointer; transition: all .3s;
+}
+.sdot.on { background: var(--primary); box-shadow: 0 0 8px rgba(225,6,0,0.4); transform: scale(1.5); }
+
+/* ── PRODUCTS AREA ───────────────────────────────────── */
+#prods-area {
+  flex: 1; overflow: hidden;
+  padding: 10px 12px 0;
+  min-height: 0;
+  background: var(--bg);
+}
+
+.swiper { width: 100%; height: 100%; }
+.swiper-slide { display: flex; align-items: stretch; height: auto !important; }
+
+/* ── PRODUCT CARD ────────────────────────────────────── */
+.pc {
+  width: 100%;
+  display: flex; flex-direction: column;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  overflow: hidden;
+  transition: transform .25s, box-shadow .25s;
+  cursor: default;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.07);
+}
+.pc:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.13);
+}
+
+.pc-img-wrap {
+  position: relative; flex: 1; min-height: 0;
+  background: #fff; overflow: hidden;
+}
+.pc-img-wrap img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain; padding: 16px;
+  transition: transform 7s ease;
+}
+.pc:hover .pc-img-wrap img { transform: scale(1.06); }
+
+.pc-ph {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px;
+}
+.pc-ph-letter { font-size: clamp(3rem, 7vw, 6rem); font-weight: 900; opacity: 0.06; line-height: 1; color: var(--text); }
+.pc-ph-code   { font-size: 0.65rem; opacity: 0.3; letter-spacing: 0.12em; color: var(--muted); }
+
+.pc-info {
+  padding: 12px 16px 14px;
+  border-top: 1px solid var(--border);
+  background: #fff;
+  flex-shrink: 0;
+}
+.pc-top-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-bottom: 5px;
+}
+.pc-brand {
+  font-size: 0.85rem; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--primary);
+}
+.pc-code-badge {
+  font-size: 0.82rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--muted);
+  border: 1.5px solid var(--border); border-radius: 999px;
+  padding: 2px 10px; white-space: nowrap; background: #f9fafb;
+}
+.pc-name {
+  font-size: 1.05rem; font-weight: 800; line-height: 1.35;
+  color: var(--text);
+  overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.pc-qty {
+  font-size: 0.85rem; color: var(--muted); margin-top: 6px; font-weight: 600;
+}
+
+/* Swiper nav */
+.swiper-button-next, .swiper-button-prev {
+  color: var(--muted) !important;
+  background: #fff;
+  border: 1.5px solid var(--border); border-radius: 50%;
+  width: 42px !important; height: 42px !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  transition: all .2s;
+}
+.swiper-button-next:hover, .swiper-button-prev:hover {
+  color: var(--primary) !important; border-color: var(--primary);
+  background: #fee2e2;
+}
+.swiper-button-next::after, .swiper-button-prev::after { font-size: 14px !important; font-weight: 900 !important; }
+.swiper-button-next { right: 6px !important; }
+.swiper-button-prev { left: 6px !important; }
+
+/* ── EMPTY STATE ─────────────────────────────────────── */
+#empty-msg {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  color: var(--muted); background: var(--bg);
+}
+#empty-msg .em-icon { font-size: 4rem; opacity: 0.2; }
+#empty-msg .em-txt  { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+#empty-msg .em-sub  { font-size: 0.85rem; opacity: 0.6; }
+
+/* ── FADE ANIMATION ──────────────────────────────────── */
+#sup-panel, #prods-area {
+  transition: opacity .4s, transform .4s;
+}
+.fading #sup-panel, .fading #prods-area {
+  opacity: 0; transform: translateY(8px);
+}
+
+/* ── TV MODE ─────────────────────────────────────────── */
+body.tv #hdr { display: none; }
+body.tv #timer-bar { top: 0; }
+body.tv #main { top: 4px; }
+body.tv #sup-nome { font-size: clamp(2rem, 4.5vw, 3.6rem); }
+body.tv #sup-panel { background: var(--bg); border-bottom-color: transparent; box-shadow: none; }
+</style>
+</head>
+<body>
+
+<!-- ★ HEADER -->
+<div id="hdr">
+  <div id="hdr-logo">
+    <img src="logo.jpeg" onerror="this.style.display='none'" alt="Logo">
+    <div id="hdr-brand">
+      <div id="hdr-brand-name">Galpão do Aço</div>
+      <div id="hdr-brand-sub">Portal de Chegada</div>
+    </div>
+  </div>
+  <div id="hdr-div"></div>
+  <div id="hdr-sep"></div>
+  <div id="hdr-right">
+    <div id="hdr-clock">--:--:--</div>
+    <div id="hdr-date"></div>
+  </div>
+  <button id="btn-tv" onclick="toggleTV()">⬛ TV</button>
+</div>
+
+<!-- ★ TIMER -->
+<div id="timer-bar"><div id="timer-fill"></div></div>
+
+<!-- ★ MAIN -->
+<div id="main">
+
+  <!-- EMPTY STATE -->
+  <div id="empty-msg">
+    <div class="em-icon">📦</div>
+    <div class="em-txt">Nenhuma mercadoria em trânsito</div>
+    <div class="em-sub">Os dados são atualizados automaticamente a cada 5 minutos.</div>
+  </div>
+
+  <!-- SUPPLIER INFO -->
+  <div id="sup-panel">
+
+    <div id="sup-top-row">
+      <div id="sup-nav">
+        <button class="snav-btn" onclick="nav(-1)" title="Anterior">‹</button>
+        <button class="snav-btn" onclick="nav(+1)" title="Próximo">›</button>
+      </div>
+      <span id="sup-counter">1 / 1</span>
+      <span id="sup-transit-label">🚢 EM TRÂNSITO</span>
+      <div id="forn-select-wrap">
+        <label for="forn-select">Ir para fornecedor:</label>
+        <select id="forn-select" onchange="ir(this.selectedIndex)">
+          <option>— selecionar —</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="sup-nome">—</div>
+
+    <div id="sup-tags">
+      <div class="stag">📋 NF&nbsp;<b id="t-nf">—</b></div>
+      <div class="stag-sep"></div>
+      <div class="stag"><b id="t-qtd">—</b>&nbsp;produto(s)</div>
+      <div class="stag-sep"></div>
+      <div class="stag">Emitida&nbsp;<b id="t-data">—</b></div>
+      <div class="stag-sep"></div>
+      <div class="stag"><b id="t-dias">—</b>&nbsp;dias em trânsito</div>
+    </div>
+
+    <div id="prog-row">
+      <div id="prog-track">
+        <div id="prog-bar">
+          <span id="prog-truck">🚚</span>
+        </div>
+      </div>
+      <span id="prog-pct">—</span>
+      <span id="prog-label">—</span>
+    </div>
+
+  </div><!-- /sup-panel -->
+
+  <!-- PRODUTOS -->
+  <div id="prods-area">
+    <div class="swiper" id="sw-prods">
+      <div class="swiper-wrapper" id="slides"></div>
+      <div class="swiper-button-next"></div>
+      <div class="swiper-button-prev"></div>
+    </div>
+  </div>
+
+  <!-- DOTS -->
+  <div id="sup-dots"></div>
+
+</div><!-- /main -->
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+// ════════════════════════════════════════════════════════════
+// ESTADO
+// ════════════════════════════════════════════════════════════
+let DRIVE_MAP   = {};
+let FORN        = [];
+let idx         = 0;
+let sw          = null;
+let tvMode      = false;
+let timerTick   = null;
+let timerSeg    = 0;
+const TEMPO_SUP  = 60;   // segundos por fornecedor
+const LT_DEFAULT = 30;   // lead time padrão em dias
+
+// ════════════════════════════════════════════════════════════
+// RELÓGIO
+// ════════════════════════════════════════════════════════════
+function tick() {
+  const n  = new Date();
+  const hh = String(n.getHours()).padStart(2,'0');
+  const mm = String(n.getMinutes()).padStart(2,'0');
+  const ss = String(n.getSeconds()).padStart(2,'0');
+  const el = document.getElementById('hdr-clock');
+  if (el) el.textContent = `${hh}:${mm}:${ss}`;
+
+  const days   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const de = document.getElementById('hdr-date');
+  if (de) de.textContent = `${days[n.getDay()]}, ${n.getDate()} ${months[n.getMonth()]} ${n.getFullYear()}`;
+}
+setInterval(tick, 1000);
+tick();
+
+// ════════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════════
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDt(iso) {
+  if (!iso) return '—';
+  const [y,m,d] = iso.slice(0,10).split('-');
+  return `${d}/${m}/${y}`;
+}
+function addDias(iso, dias) {
+  const dt = new Date(iso + 'T12:00:00');
+  dt.setDate(dt.getDate() + Math.round(dias));
+  return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`;
+}
+function decorridos(iso) {
+  if (!iso) return 0;
+  return Math.max(0, Math.round((Date.now() - new Date(iso+'T12:00:00')) / 86400000));
+}
+function numBR(n,d=0) { return Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+
+// ════════════════════════════════════════════════════════════
+// IMAGENS
+// ════════════════════════════════════════════════════════════
+function imgSrc(cod) {
+  const k = String(cod);
+  if (DRIVE_MAP[k]) {
+    const v = DRIVE_MAP[k];
+    if (v.startsWith('http') || v.startsWith('imagens/')) return v;
+    if (v.length > 10) return 'https://drive.google.com/thumbnail?id=' + v + '&sz=w600';
+  }
+  return 'imagens/' + k + '.jpg';
+}
+
+async function carregarDriveMap() {
+  for (const src of ['imagens_drive.json']) {
+    try {
+      const r = await fetch(src + '?_t=' + Date.now());
+      if (!r.ok) continue;
+      const data = await r.json();
+      const m = data.imagens || data;
+      if (m && Object.keys(m).length) { DRIVE_MAP = m; return; }
+    } catch(e) {}
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// AGRUPAR POR FORNECEDOR
+// ════════════════════════════════════════════════════════════
+function agrupar(prenotas, leadTimes) {
+  const ltIdx = {};
+  for (const lt of (leadTimes||[])) {
+    const d = parseFloat(lt.lead_time_medio || lt.lead_time || 0) || 0;
+    if (!d) continue;
+    if (lt.idclifor != null) ltIdx['id:'+lt.idclifor] = d;
+    const n = String(lt.nome_fornecedor||lt.nome||'').trim().toUpperCase();
+    if (n) ltIdx[n] = d;
+  }
+
+  const mapa = new Map();
+  for (const p of (prenotas||[])) {
+    const nome  = String(p.nome_fornecedor||'').trim() || 'Fornecedor não identificado';
+    const idc   = p.idclifor;
+    const chave = idc != null ? 'id:'+idc : nome.toUpperCase();
+
+    if (!mapa.has(chave)) {
+      let lt = idc != null ? (ltIdx['id:'+idc]||0) : 0;
+      if (!lt) lt = ltIdx[nome.toUpperCase()] || LT_DEFAULT;
+      mapa.set(chave, { nome, idc, lt, dtmin: p.dtmovimento||null, nfs: new Set(), prods: [] });
+    }
+    const g = mapa.get(chave);
+    if (p.dtmovimento && (!g.dtmin || p.dtmovimento < g.dtmin)) g.dtmin = p.dtmovimento;
+    if (p.num_nf) g.nfs.add(String(p.num_nf));
+    const cod = String(p.idsubproduto||'');
+    if (!g.prods.some(x => String(x.idsubproduto) === cod)) g.prods.push(p);
+  }
+
+  return [...mapa.values()]
+    .filter(g => g.prods.length > 0)
+    .sort((a,b) => (b.dtmin||'').localeCompare(a.dtmin||''));
+}
+
+// ════════════════════════════════════════════════════════════
+// CARD DE PRODUTO
+// ════════════════════════════════════════════════════════════
+function prodCard(p) {
+  const cod    = p.idsubproduto || '';
+  const desc   = p.descricao || '';
+  const src    = imgSrc(cod);
+  const letter = (desc||String(cod)).charAt(0).toUpperCase();
+  const qty    = p.qtdproduto ? numBR(p.qtdproduto,0)+' '+(p.unidade||'un') : '';
+  const words  = desc.split(' ');
+  const brand  = words[0] && words[0].length <= 12 ? words[0] : '';
+  return `
+    <div class="pc">
+      <div class="pc-img-wrap">
+        <img src="${esc(src)}" alt="${esc(desc)}"
+             onerror="this.src='imagens/${esc(String(cod))}.png';this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='flex'}">
+        <div class="pc-ph" style="display:none">
+          <div class="pc-ph-letter">${esc(letter)}</div>
+          <div class="pc-ph-code">Cód. ${esc(String(cod))}</div>
+        </div>
+      </div>
+      <div class="pc-info">
+        <div class="pc-top-row">
+          <span class="pc-brand">${esc(brand)}</span>
+          <span class="pc-code-badge">Cód. ${esc(String(cod))}</span>
+        </div>
+        <div class="pc-name">${esc(desc)}</div>
+        ${qty ? `<div class="pc-qty">📦 ${qty}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// EXIBIR FORNECEDOR
+// ════════════════════════════════════════════════════════════
+function mostrar(i) {
+  const empty = document.getElementById('empty-msg');
+  if (!FORN.length) {
+    empty.style.display = 'flex';
+    ['sup-panel','prods-area','sup-dots'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.visibility = 'hidden';
+    });
+    return;
+  }
+  empty.style.display = 'none';
+  ['sup-panel','prods-area','sup-dots'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.visibility = '';
+  });
+
+  idx = ((i % FORN.length) + FORN.length) % FORN.length;
+  const g = FORN[idx];
+
+  const main = document.getElementById('main');
+  main.classList.add('fading');
+  setTimeout(() => {
+    _preencher(g);
+    main.classList.remove('fading');
+  }, 200);
+}
+
+function _preencher(g) {
+  document.getElementById('sup-counter').textContent = (idx+1)+' / '+FORN.length;
+  document.getElementById('sup-nome').textContent = g.nome;
+
+  const nfsArr = [...g.nfs].slice(0,4);
+  document.getElementById('t-nf').textContent    = nfsArr.length ? nfsArr.join(', ')+(g.nfs.size>4?' +'+(g.nfs.size-4):'') : '—';
+  document.getElementById('t-qtd').textContent   = g.prods.length;
+  document.getElementById('t-data').textContent  = fmtDt(g.dtmin);
+  const dec = decorridos(g.dtmin);
+  document.getElementById('t-dias').textContent  = dec;
+
+  // Progress
+  const pct = g.lt > 0 ? Math.min(99, Math.round((dec / g.lt) * 100)) : 0;
+  let barClr, glowClr, textClr;
+  if (pct >= 90) {
+    barClr = 'linear-gradient(90deg,#ef4444,#f87171)'; glowClr='#ef4444'; textClr='#ef4444';
+  } else if (pct >= 65) {
+    barClr = 'linear-gradient(90deg,#f59e0b,#fbbf24)'; glowClr='#f59e0b'; textClr='#f59e0b';
+  } else {
+    barClr = 'linear-gradient(90deg,var(--primary),#ff6b6b)'; glowClr='var(--primary)'; textClr='var(--primary)';
+  }
+  const bar = document.getElementById('prog-bar');
+  bar.style.width      = pct + '%';
+  bar.style.background = barClr;
+  bar.style.boxShadow  = `0 0 10px ${glowClr}`;
+
+  const truck = document.getElementById('prog-truck');
+  if (truck) {
+    truck.style.filter  = `drop-shadow(0 0 8px ${glowClr})`;
+    truck.style.display = pct > 1 ? '' : 'none';
+  }
+  const pctEl = document.getElementById('prog-pct');
+  pctEl.textContent = pct + '%';
+  pctEl.style.color = textClr;
+
+  const lbl = document.getElementById('prog-label');
+  if (g.lt > 0 && g.dtmin) {
+    const rest = Math.max(0, g.lt - dec);
+    if (pct >= 99) {
+      lbl.textContent = '⚠️ Prazo estimado atingido';
+      lbl.style.color = '#ef4444';
+    } else {
+      lbl.textContent = `Previsão: ${addDias(g.dtmin, g.lt)} · ${rest}d restantes`;
+      lbl.style.color = 'var(--muted)';
+    }
+  } else {
+    lbl.textContent = 'Lead time não configurado';
+    lbl.style.color = 'var(--muted)';
+  }
+
+  // Selector sync
+  const sel = document.getElementById('forn-select');
+  if (sel && sel.options.length > 1) sel.selectedIndex = idx;
+
+  // Dots
+  const dotsEl = document.getElementById('sup-dots');
+  const total  = FORN.length;
+  const maxD   = 14;
+  const shown  = Math.min(total, maxD);
+  let html = '';
+  for (let d = 0; d < shown; d++) {
+    const ri  = total <= maxD ? d : Math.round((d/(shown-1))*(total-1));
+    const act = total <= maxD ? d === idx : ri === idx;
+    html += `<div class="sdot${act?' on':''}" onclick="ir(${total<=maxD?d:ri})" title="${esc(FORN[total<=maxD?d:ri]?.nome||'')}"></div>`;
+  }
+  dotsEl.innerHTML = html;
+
+  // Produto slides
+  const slidesEl = document.getElementById('slides');
+  slidesEl.innerHTML = g.prods.map(p => `<div class="swiper-slide">${prodCard(p)}</div>`).join('');
+
+  // Calcular alturas
+  const mainH  = document.getElementById('main').clientHeight;
+  const panH   = document.getElementById('sup-panel').offsetHeight;
+  const dotsH  = 38;
+  const cardH  = Math.max(180, mainH - panH - dotsH - 10);
+
+  // Largura dos cards
+  const areaW  = document.getElementById('prods-area').clientWidth - 70;
+  const n      = g.prods.length;
+  const cardW  = n === 1 ? Math.min(420, areaW * 0.55)
+               : n === 2 ? Math.min(360, areaW * 0.44)
+               : n <= 4  ? Math.min(300, areaW * 0.28)
+               :            Math.min(265, areaW * 0.22);
+
+  document.getElementById('prods-area').style.height = cardH + 'px';
+
+  if (sw) { try { sw.destroy(true,true); } catch(e){} sw = null; }
+  sw = new Swiper('#sw-prods', {
+    slidesPerView: 'auto',
+    spaceBetween: 14,
+    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+    autoplay: n > 3 ? { delay: 3200, disableOnInteraction: false } : false,
+    loop: n > 3,
+    on: {
+      init(s) {
+        s.slides.forEach(sl => {
+          sl.style.width  = cardW + 'px';
+          sl.style.height = (cardH - 8) + 'px';
+        });
+      }
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+// NAVEGAÇÃO
+// ════════════════════════════════════════════════════════════
+function nav(delta) { resetTimer(); mostrar(idx + delta); }
+function ir(i)      { resetTimer(); mostrar(i); }
+
+// ════════════════════════════════════════════════════════════
+// TIMER
+// ════════════════════════════════════════════════════════════
+function resetTimer() {
+  timerSeg = 0;
+  const fill = document.getElementById('timer-fill');
+  if (fill) { fill.style.transition = 'none'; fill.style.width = '0%'; }
+  if (timerTick) { clearInterval(timerTick); timerTick = null; }
+  if (FORN.length <= 1) return;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (fill) fill.style.transition = '';
+    startTimer();
+  }));
+}
+
+function startTimer() {
+  if (!FORN.length || FORN.length < 2) return;
+  const step = 250;
+  const fill = document.getElementById('timer-fill');
+  timerTick = setInterval(() => {
+    timerSeg += step / 1000;
+    const pct = Math.min(100, (timerSeg / TEMPO_SUP) * 100);
+    if (fill) fill.style.width = pct + '%';
+    if (timerSeg >= TEMPO_SUP) {
+      clearInterval(timerTick); timerTick = null;
+      mostrar(idx + 1);
+      resetTimer();
+    }
+  }, step);
+}
+
+// ════════════════════════════════════════════════════════════
+// CARREGAR DADOS
+// ════════════════════════════════════════════════════════════
+async function carregarDados() {
+  let data;
+  try {
+    const r = await fetch('portal_data.json?_t=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    data = await r.json();
+  } catch(e) {
+    console.error('Erro ao carregar dados:', e);
+    return;
+  }
+
+  const prenotas  = data.prenota_detalhes  || [];
+  const leadTimes = data.lead_time_fornec  || [];
+
+  FORN = agrupar(prenotas, leadTimes);
+  console.log('Fornecedores em trânsito:', FORN.length,
+    '| Produtos:', FORN.reduce((s,g)=>s+g.prods.length, 0));
+
+  // Popular seletor
+  const sel = document.getElementById('forn-select');
+  if (sel) {
+    sel.innerHTML = FORN.map((g, i) =>
+      `<option value="${i}">${g.nome} · ${g.prods.length} item(ns)</option>`
+    ).join('');
+    sel.style.display = FORN.length < 2 ? 'none' : '';
+    const lbl = document.querySelector('#forn-select-wrap label');
+    if (lbl) lbl.style.display = FORN.length < 2 ? 'none' : '';
+  }
+
+  idx = 0;
+  mostrar(0);
+  if (FORN.length > 1) resetTimer();
+}
+
+// ════════════════════════════════════════════════════════════
+// TV MODE
+// ════════════════════════════════════════════════════════════
+function toggleTV() {
+  tvMode = !tvMode;
+  document.body.classList.toggle('tv', tvMode);
+  document.getElementById('btn-tv').textContent = tvMode ? '✕ Sair TV' : '⬛ TV';
+  if (tvMode && document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(()=>{});
+  } else if (!tvMode && document.fullscreenElement) {
+    document.exitFullscreen().catch(()=>{});
+  }
+  setTimeout(() => { if (FORN.length) _preencher(FORN[idx]); }, 300);
+}
+
+// ════════════════════════════════════════════════════════════
+// TECLADO
+// ════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'F11' || (e.key === 'Escape' && tvMode)) { e.preventDefault(); toggleTV(); }
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nav(+1); }
+  if (e.key === 'ArrowLeft')                    { e.preventDefault(); nav(-1); }
+  if (e.key === 'F5')                           { e.preventDefault(); carregarDados(); }
+});
+
+window.addEventListener('resize', () => { if (FORN.length) _preencher(FORN[idx]); });
+
+// ════════════════════════════════════════════════════════════
+// INICIAR
+// ════════════════════════════════════════════════════════════
+carregarDriveMap().then(() => carregarDados());
+setInterval(carregarDados,      5 * 60 * 1000);
+setInterval(carregarDriveMap,  60 * 60 * 1000);
+</script>
+</body>
+</html>

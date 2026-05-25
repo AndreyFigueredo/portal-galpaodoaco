@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "name": "portal-galpaodoaco",
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "public": true,
+  "routes": [
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=300, stale-while-revalidate=60" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    },
+    {
+      "source": "/portal_data.json",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=60, stale-while-revalidate=30" }
+      ]
+    }
+  ]
+}
