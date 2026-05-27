@@ -327,6 +327,7 @@ body.tv #sup-panel { background: var(--bg); border-bottom-color: transparent; bo
   <div id="hdr-div"></div>
   <div id="hdr-sep"></div>
   <div id="hdr-right">
+    <div id="hdr-atualizacao" style="font-size:10px;color:rgba(255,255,255,.5);text-align:right;line-height:1.3;max-width:140px"></div>
     <div id="hdr-clock">--:--:--</div>
     <div id="hdr-date"></div>
   </div>
@@ -412,8 +413,10 @@ let FORN        = [];
 let idx         = 0;
 let sw          = null;
 let tvMode      = false;
-let timerTick   = null;
-let timerSeg    = 0;
+let timerTick      = null;
+let timerSeg       = 0;
+let _timerResetId  = null;
+let IMG_VER     = Date.now(); // cache-busting: muda a cada reload de dados
 const TEMPO_SUP  = 60;   // segundos por fornecedor
 const LT_DEFAULT = 30;   // lead time padrão em dias
 
@@ -463,23 +466,41 @@ function numBR(n,d=0) { return Number(n||0).toLocaleString('pt-BR',{minimumFract
 // ════════════════════════════════════════════════════════════
 function imgSrc(cod) {
   const k = String(cod);
-  if (DRIVE_MAP[k]) {
-    const v = DRIVE_MAP[k];
-    if (v.startsWith('http') || v.startsWith('imagens/')) return v;
+  const v = DRIVE_MAP[k];
+  if (v) {
+    if (v.startsWith('http')) return v;
+    if (v.startsWith('imagens/')) return v + '?_v=' + IMG_VER;
     if (v.length > 10) return 'https://drive.google.com/thumbnail?id=' + v + '&sz=w600';
   }
-  return 'imagens/' + k + '.jpg';
+  return 'imagens/' + k + '.jpg?_v=' + IMG_VER;
+}
+
+// URLs dos dados — busca do GitHub raw para nao consumir Edge Requests do Vercel.
+// Fallback para URL relativa caso o GitHub esteja indisponivel.
+const GITHUB_RAW = 'https://raw.githubusercontent.com/AndreyFigueredo/portal-galpaodoaco/main/';
+
+async function _fetchJson(nomeArquivo) {
+  const t = Date.now();
+  const urls = [
+    GITHUB_RAW + nomeArquivo + '?_t=' + t,
+    nomeArquivo + '?_t=' + t
+  ];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { cache: 'no-store' });
+      if (r.ok) return await r.json();
+    } catch(e) {}
+  }
+  return null;
 }
 
 async function carregarDriveMap() {
-  for (const src of ['imagens_drive.json']) {
-    try {
-      const r = await fetch(src + '?_t=' + Date.now());
-      if (!r.ok) continue;
-      const data = await r.json();
-      const m = data.imagens || data;
-      if (m && Object.keys(m).length) { DRIVE_MAP = m; return; }
-    } catch(e) {}
+  const data = await _fetchJson('imagens_drive.json');
+  if (!data) return;
+  const m = data.imagens || data;
+  if (m && Object.keys(m).length) {
+    DRIVE_MAP = m;
+    IMG_VER = Date.now(); // renova versao ao recarregar mapa
   }
 }
 
@@ -534,7 +555,7 @@ function prodCard(p) {
     <div class="pc">
       <div class="pc-img-wrap">
         <img src="${esc(src)}" alt="${esc(desc)}"
-             onerror="this.src='imagens/${esc(String(cod))}.png';this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='flex'}">
+             onerror="this.src='imagens/${esc(String(cod))}.png?_v='+IMG_VER;this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='flex'}">
         <div class="pc-ph" style="display:none">
           <div class="pc-ph-letter">${esc(letter)}</div>
           <div class="pc-ph-code">Cód. ${esc(String(cod))}</div>
@@ -700,14 +721,17 @@ function resetTimer() {
   const fill = document.getElementById('timer-fill');
   if (fill) { fill.style.transition = 'none'; fill.style.width = '0%'; }
   if (timerTick) { clearInterval(timerTick); timerTick = null; }
+  if (_timerResetId) { clearTimeout(_timerResetId); _timerResetId = null; }
   if (FORN.length <= 1) return;
-  requestAnimationFrame(() => requestAnimationFrame(() => {
+  _timerResetId = setTimeout(() => {
+    _timerResetId = null;
     if (fill) fill.style.transition = '';
     startTimer();
-  }));
+  }, 50);
 }
 
 function startTimer() {
+  if (timerTick) { clearInterval(timerTick); timerTick = null; } // guarda: nunca dois intervalos
   if (!FORN.length || FORN.length < 2) return;
   const step = 250;
   const fill = document.getElementById('timer-fill');
@@ -727,14 +751,13 @@ function startTimer() {
 // CARREGAR DADOS
 // ════════════════════════════════════════════════════════════
 async function carregarDados() {
-  let data;
-  try {
-    const r = await fetch('portal_data.json?_t=' + Date.now());
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    data = await r.json();
-  } catch(e) {
-    console.error('Erro ao carregar dados:', e);
-    return;
+  const data = await _fetchJson('portal_data.json');
+  if (!data) { console.error('Nao foi possivel carregar portal_data.json'); return; }
+
+  // Mostrar timestamp de atualizacao no header
+  if (data.gerado_em) {
+    const el = document.getElementById('hdr-atualizacao');
+    if (el) el.textContent = 'Atualizado: ' + data.gerado_em;
   }
 
   const prenotas  = data.prenota_detalhes  || [];
