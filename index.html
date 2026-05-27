@@ -61,6 +61,15 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
   transition: all .2s; white-space: nowrap;
 }
 #btn-tv:hover { background: #fee2e2; color: var(--primary); border-color: var(--primary); }
+#btn-atualizar {
+  background: #e6f4ea; border: 1.5px solid #a8d5b5;
+  color: #1a7a3f; padding: 7px 16px; border-radius: 8px;
+  cursor: pointer; font-size: 0.8rem; font-family: inherit; font-weight: 700;
+  transition: all .2s; white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+#btn-atualizar:hover { background: #c8ecd3; border-color: #1a7a3f; }
+#btn-atualizar.loading { opacity: .6; pointer-events: none; }
+#btn-atualizar svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
 
 /* ── TIMER BAR ───────────────────────────────────────── */
 #timer-bar {
@@ -331,6 +340,10 @@ body.tv #sup-panel { background: var(--bg); border-bottom-color: transparent; bo
     <div id="hdr-clock">--:--:--</div>
     <div id="hdr-date"></div>
   </div>
+  <button id="btn-atualizar" onclick="clicarAtualizar()">
+    <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+    <span id="btn-atualizar-txt">Atualizar</span>
+  </button>
   <button id="btn-tv" onclick="toggleTV()">⬛ TV</button>
 </div>
 
@@ -813,6 +826,36 @@ window.addEventListener('resize', () => { if (FORN.length) _preencher(FORN[idx])
 // ════════════════════════════════════════════════════════════
 // INICIAR
 // ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
+// BOTÃO ATUALIZAR
+// ════════════════════════════════════════════════════════════
+async function clicarAtualizar() {
+  const btn = document.getElementById('btn-atualizar');
+  const txt = document.getElementById('btn-atualizar-txt');
+  if (!btn || btn.classList.contains('loading')) return;
+
+  btn.classList.add('loading');
+  txt.textContent = 'Atualizando...';
+
+  // Tentar disparar exportação via servidor local (só funciona no PC local)
+  try {
+    await fetch('http://localhost:5050/atualizar', { signal: AbortSignal.timeout(2000) });
+    txt.textContent = 'Exportando ERP...';
+    // Aguardar 8s para o servidor processar antes de recarregar dados
+    await new Promise(r => setTimeout(r, 8000));
+  } catch(e) {
+    // Servidor local não disponível — apenas recarrega os dados do GitHub
+  }
+
+  // Recarregar dados do GitHub agora
+  await carregarDriveMap();
+  await carregarDados();
+
+  btn.classList.remove('loading');
+  txt.textContent = '✓ Atualizado';
+  setTimeout(() => { txt.textContent = 'Atualizar'; }, 3000);
+}
+
 carregarDriveMap().then(() => carregarDados());
 setInterval(carregarDados,      5 * 60 * 1000);
 setInterval(carregarDriveMap,  60 * 60 * 1000);
