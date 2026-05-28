@@ -791,8 +791,8 @@ async function carregarDados() {
     if (lbl) lbl.style.display = FORN.length < 2 ? 'none' : '';
   }
 
-  idx = 0;
-  mostrar(0);
+  idx = FORN.length > 1 ? Math.floor(Math.random() * FORN.length) : 0;
+  mostrar(idx);
   if (FORN.length > 1) resetTimer();
 }
 
