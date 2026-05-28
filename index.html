@@ -426,12 +426,12 @@ let FORN        = [];
 let idx         = 0;
 let sw          = null;
 let tvMode      = false;
-let timerTick      = null;
-let timerSeg       = 0;
-let _timerResetId  = null;
+let _timerSessao   = 0;    // ID da sessão atual do timer — invalidar sessões antigas
+let timerSeg       = 0;    // apenas para compat. com fill bar
 let IMG_VER     = Date.now(); // cache-busting: muda a cada reload de dados
-const TEMPO_SUP  = 60;   // segundos por fornecedor
+const TEMPO_SUP  = 60;   // segundos por fornecedor (fixo, nunca muda)
 const LT_DEFAULT = 30;   // lead time padrão em dias
+let _primeiraVez   = true; // randomizar idx só na primeira carga
 
 // ════════════════════════════════════════════════════════════
 // RELÓGIO
@@ -727,37 +727,46 @@ function nav(delta) { resetTimer(); mostrar(idx + delta); }
 function ir(i)      { resetTimer(); mostrar(i); }
 
 // ════════════════════════════════════════════════════════════
-// TIMER
+// TIMER — baseado em session ID para garantir tempo fixo sempre
+// Cada resetTimer() cria uma nova sessão e invalida todas as
+// anteriores. Sem setInterval: usa setTimeout recursivo com
+// timestamp real para evitar deriva mesmo que a aba fique em
+// background por alguns segundos.
 // ════════════════════════════════════════════════════════════
 function resetTimer() {
-  timerSeg = 0;
+  _timerSessao++;                             // invalida qualquer sessão anterior
+  const sessao = _timerSessao;
+
   const fill = document.getElementById('timer-fill');
   if (fill) { fill.style.transition = 'none'; fill.style.width = '0%'; }
-  if (timerTick) { clearInterval(timerTick); timerTick = null; }
-  if (_timerResetId) { clearTimeout(_timerResetId); _timerResetId = null; }
   if (FORN.length <= 1) return;
-  _timerResetId = setTimeout(() => {
-    _timerResetId = null;
+
+  // Aguardar 1 frame para o CSS de reset ser aplicado
+  setTimeout(() => {
+    if (sessao !== _timerSessao) return;      // outra sessão assumiu, parar
     if (fill) fill.style.transition = '';
-    startTimer();
+    _tickTimer(sessao, Date.now());
   }, 50);
 }
 
-function startTimer() {
-  if (timerTick) { clearInterval(timerTick); timerTick = null; } // guarda: nunca dois intervalos
-  if (!FORN.length || FORN.length < 2) return;
-  const step = 250;
-  const fill = document.getElementById('timer-fill');
-  timerTick = setInterval(() => {
-    timerSeg += step / 1000;
-    const pct = Math.min(100, (timerSeg / TEMPO_SUP) * 100);
-    if (fill) fill.style.width = pct + '%';
-    if (timerSeg >= TEMPO_SUP) {
-      clearInterval(timerTick); timerTick = null;
-      mostrar(idx + 1);
-      resetTimer();
-    }
-  }, step);
+function _tickTimer(sessao, tInicio) {
+  if (sessao !== _timerSessao) return;        // sessão invalidada → para sozinho
+  if (FORN.length < 2) return;
+
+  const fill     = document.getElementById('timer-fill');
+  const elapsed  = (Date.now() - tInicio) / 1000;
+  const pct      = Math.min(100, (elapsed / TEMPO_SUP) * 100);
+
+  if (fill) fill.style.width = pct + '%';
+
+  if (elapsed >= TEMPO_SUP) {
+    // Tempo esgotado: avançar fornecedor e reiniciar timer
+    mostrar(idx + 1);
+    resetTimer();
+  } else {
+    // Próximo tick em 250ms (timestamp real evita deriva)
+    setTimeout(() => _tickTimer(sessao, tInicio), 250);
+  }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -777,10 +786,10 @@ async function carregarDados() {
   const leadTimes = data.lead_time_fornec  || [];
 
   FORN = agrupar(prenotas, leadTimes);
-  console.log('Fornecedores em trânsito:', FORN.length,
+  console.log('Fornecedores em transito:', FORN.length,
     '| Produtos:', FORN.reduce((s,g)=>s+g.prods.length, 0));
 
-  // Popular seletor
+  // Popular seletor (visibilidade)
   const sel = document.getElementById('forn-select');
   if (sel) {
     sel.innerHTML = FORN.map((g, i) =>
@@ -791,9 +800,19 @@ async function carregarDados() {
     if (lbl) lbl.style.display = FORN.length < 2 ? 'none' : '';
   }
 
-  idx = FORN.length > 1 ? Math.floor(Math.random() * FORN.length) : 0;
-  mostrar(idx);
-  if (FORN.length > 1) resetTimer();
+  if (_primeiraVez) {
+    // Primeira abertura: sortear fornecedor inicial
+    idx = FORN.length > 1 ? Math.floor(Math.random() * FORN.length) : 0;
+    _primeiraVez = false;
+    mostrar(idx);
+    if (FORN.length > 1) resetTimer();
+  } else {
+    // Recarga automática (a cada 5 min): manter posição e timer atuais
+    // Só re-renderiza o card do fornecedor atual com dados frescos
+    if (idx >= FORN.length) idx = 0;
+    mostrar(idx);
+    // NÃO chama resetTimer() — deixa o timer correr normalmente
+  }
 }
 
 // ════════════════════════════════════════════════════════════
