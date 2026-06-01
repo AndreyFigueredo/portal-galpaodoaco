@@ -377,43 +377,63 @@ body.tv #sup-panel { background: var(--bg); border-bottom-color: transparent; bo
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
 }
+/* ── CARDS DE ASSISTÊNCIA (estilo dashboard) ─────────── */
 .assist-card {
-  background: #fff; border-radius: 12px; padding: 18px 20px;
+  background: #fff; border-radius: 12px;
   border: 1.5px solid var(--border); position: relative;
   box-shadow: 0 2px 8px rgba(0,0,0,.05);
   transition: box-shadow .2s, border-color .2s;
+  display: flex; flex-direction: column; overflow: hidden;
 }
-.assist-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #d1d5db; }
-.assist-card-marca {
-  display: inline-block; background: var(--primary); color: #fff;
-  font-size: 10px; font-weight: 800; letter-spacing: .06em;
-  padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; text-transform: uppercase;
+.assist-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.1); border-color: #c5c9d0; }
+
+/* Topo colorido com marca + ações */
+.ac-head {
+  background: linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);
+  padding: 12px 14px 10px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
-.assist-card-nome {
-  font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 10px;
+.ac-marca-badge {
+  background: var(--primary); color: #fff; font-size: 10px; font-weight: 800;
+  letter-spacing: .07em; padding: 3px 11px; border-radius: 20px;
+  text-transform: uppercase; white-space: nowrap;
+}
+.ac-actions { display: flex; gap: 5px; }
+.ac-act-btn {
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+  border-radius: 6px; padding: 3px 8px; cursor: pointer; font-size: 11px;
+  color: rgba(255,255,255,.75); transition: all .15s;
+}
+.ac-act-btn:hover        { background: rgba(255,255,255,.22); color: #fff; }
+.ac-act-btn.del:hover    { background: rgba(220,38,38,.5);    border-color: #dc2626; color: #fff; }
+
+/* Nome */
+.ac-nome {
+  font-size: 14px; font-weight: 800; color: var(--text); padding: 12px 14px 0;
   line-height: 1.3;
 }
-.assist-card-row {
-  display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px;
-  font-size: 12.5px; color: #4b5563;
+
+/* Infos */
+.ac-infos { padding: 8px 14px 0; display: flex; flex-direction: column; gap: 6px; }
+.ac-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 12px; color: #4b5563; line-height: 1.4;
 }
-.assist-card-row svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 1px;
-  stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; }
-.assist-card-garantia {
-  margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border);
-  font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 6px;
+.ac-row-icon { font-size: 13px; flex-shrink: 0; }
+
+/* Garantia */
+.ac-garantia {
+  margin: 10px 14px 0; padding: 7px 10px; border-radius: 8px;
+  background: #f0fdf4; border: 1px solid #bbf7d0;
+  font-size: 11.5px; color: #166534; font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
 }
-.assist-card-garantia strong { color: #16a34a; }
-.assist-card-actions {
-  position: absolute; top: 14px; right: 14px; display: flex; gap: 6px;
+
+/* Footer */
+.ac-footer {
+  margin-top: auto; padding: 10px 14px 12px;
+  font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 12px;
 }
-.assist-act-btn {
-  background: none; border: 1px solid var(--border); border-radius: 6px;
-  padding: 4px 8px; cursor: pointer; font-size: 11px; color: var(--muted);
-  transition: all .15s;
-}
-.assist-act-btn:hover { border-color: var(--primary); color: var(--primary); }
-.assist-act-btn.del:hover { border-color: #dc2626; color: #dc2626; }
 
 /* Estado vazio */
 .assist-empty {
@@ -516,9 +536,8 @@ body.tv #sup-panel { background: var(--bg); border-bottom-color: transparent; bo
     <div class="am-body">
       <div class="am-field">
         <label>Marca</label>
-        <select id="am-marca">
-          <option value="">Selecione ou digite abaixo…</option>
-        </select>
+        <input id="am-marca" type="text" list="am-marca-list" placeholder="Digite ou selecione a marca…" autocomplete="off">
+        <datalist id="am-marca-list"></datalist>
       </div>
       <div class="am-field">
         <label>Nome da Assistência</label>
@@ -1107,16 +1126,30 @@ function toggleAssist() {
   }
 }
 
-// Popular select de marcas com as marcas do portal
+// Popular datalist de marcas — puxa do banco de dados (FORN/prods) + assistências já cadastradas
 function assistPopularMarcas() {
-  const sel = document.getElementById('am-marca');
-  const marcasPortal = [...new Set(FORN.flatMap(f => f.prods.map(p => (p.descricao || '').split(' ')[0])))].sort();
-  // Usar marcas conhecidas dos fornecedores
-  const marcasAssist = [...new Set(assistCarregar().map(a => a.marca))].sort();
-  const todas = [...new Set([...marcasAssist, 'MAKITA','BOSCH','DEWALT','VONDER','TRAMONTINA','STARRETT','ATLAS','JOMARCA','DETONI','STAM','MARKON','TRON','PRESSURE','ANFIX'])].sort();
+  const dl = document.getElementById('am-marca-list');
+  if (!dl) return;
 
-  sel.innerHTML = '<option value="">— Selecione a marca —</option>'
-    + todas.map(m => `<option value="${m}">${m}</option>`).join('');
+  // Marcas dos produtos em trânsito (portal data)
+  const marcasPortal = new Set();
+  (FORN || []).forEach(f => (f.prods || []).forEach(p => {
+    const m = (p.marca || (p.descricao || '').split(' ')[0] || '').toUpperCase().trim();
+    if (m.length > 1) marcasPortal.add(m);
+  }));
+
+  // Marcas já cadastradas nas assistências
+  assistCarregar().forEach(a => { if (a.marca) marcasPortal.add(a.marca.toUpperCase().trim()); });
+
+  // Fallback com marcas conhecidas (sempre disponíveis)
+  ['MAKITA','BOSCH','DEWALT','VONDER','TRAMONTINA','STARRETT','ATLAS','JOMARCA',
+   'DETONI','STAM','MARCON','TRON','PRESSURE','ANFIX','CARROCINHA','DPLASTIC',
+   'CSM','DENVER','MARLUVAS','BESTFER BF','VONDER PLUS','COMEP','SANTA BARBARA',
+   'COLSON','LUFKIN','MOTOMIL','BOXER','SOLVENTEX','BRASCAMP','PRENSAL','LOTUS',
+   'TEKWELD','BRASCOLA','CHICAGO PNEUMATIC','CAPO']
+    .forEach(m => marcasPortal.add(m));
+
+  dl.innerHTML = [...marcasPortal].sort().map(m => `<option value="${m}">`).join('');
 }
 
 // Filtro ativo
@@ -1152,23 +1185,20 @@ function assistRenderizar() {
 
   grid.innerHTML = filtradas.map(a => `
     <div class="assist-card">
-      <div class="assist-card-actions">
-        <button class="assist-act-btn" onclick="assistEditar('${a.id}')">✏️</button>
-        <button class="assist-act-btn del" onclick="assistExcluir('${a.id}')">🗑</button>
+      <div class="ac-head">
+        <span class="ac-marca-badge">${escHtml(a.marca || '—')}</span>
+        <div class="ac-actions">
+          <button class="ac-act-btn" onclick="assistEditar('${a.id}')">✏️ Editar</button>
+          <button class="ac-act-btn del" onclick="assistExcluir('${a.id}')">🗑</button>
+        </div>
       </div>
-      <div class="assist-card-marca">${escHtml(a.marca || '—')}</div>
-      <div class="assist-card-nome">${escHtml(a.nome || '—')}</div>
-      ${a.endereco ? `<div class="assist-card-row">
-        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        ${escHtml(a.endereco)}
-      </div>` : ''}
-      ${a.telefone ? `<div class="assist-card-row">
-        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.17 1.22 2 2 0 012.15 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
-        <a href="tel:${escHtml(a.telefone)}" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none">${escHtml(a.telefone)}</a>
-      </div>` : ''}
-      ${a.garantia ? `<div class="assist-card-garantia">
-        🛡 Garantia: <strong>${escHtml(a.garantia)}</strong>
-      </div>` : ''}
+      <div class="ac-nome">${escHtml(a.nome || '—')}</div>
+      <div class="ac-infos">
+        ${a.endereco ? `<div class="ac-row"><span class="ac-row-icon">📍</span><span>${escHtml(a.endereco)}</span></div>` : ''}
+        ${a.telefone ? `<div class="ac-row"><span class="ac-row-icon">📞</span><a href="tel:${escHtml(a.telefone)}" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none">${escHtml(a.telefone)}</a></div>` : ''}
+      </div>
+      ${a.garantia ? `<div class="ac-garantia">🛡 Garantia: ${escHtml(a.garantia)}</div>` : ''}
+      <div class="ac-footer">Assistência técnica autorizada</div>
     </div>`).join('');
 }
 
@@ -1196,9 +1226,7 @@ function assistAbrirModal(id) {
     }
   } else {
     ['am-marca','am-nome','am-end','am-tel','am-garantia'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el.tagName === 'SELECT') el.value = '';
-      else el.value = '';
+      document.getElementById(id).value = '';
     });
   }
 }
