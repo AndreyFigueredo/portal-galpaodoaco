@@ -526,50 +526,10 @@ body.tv #sup-panel { background: var(--bg); border-bottom-color: transparent; bo
   <div class="assist-topbar">
     <h2>🔧 Assistências Técnicas</h2>
     <input class="assist-search" id="assist-search" placeholder="Buscar assistência ou marca…" oninput="assistRenderizar()">
-    <button class="btn-add-assist" onclick="assistAbrirModal()">
-      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Nova Assistência
-    </button>
+
   </div>
   <div class="assist-filters" id="assist-filters"></div>
   <div class="assist-grid" id="assist-grid"></div>
-</div>
-
-<!-- ★ MODAL CADASTRO -->
-<div id="assist-modal-overlay" onclick="if(event.target===this)assistFecharModal()">
-  <div id="assist-modal">
-    <div class="am-header">
-      <span id="am-title">Nova Assistência Técnica</span>
-      <button class="am-close" onclick="assistFecharModal()">✕</button>
-    </div>
-    <div class="am-body">
-      <div class="am-field">
-        <label>Marca</label>
-        <input id="am-marca" type="text" list="am-marca-list" placeholder="Digite ou selecione a marca…" autocomplete="off">
-        <datalist id="am-marca-list"></datalist>
-      </div>
-      <div class="am-field">
-        <label>Nome da Assistência</label>
-        <input id="am-nome" type="text" placeholder="Ex: Eletro Peças e Serviços" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="am-field">
-        <label>Endereço</label>
-        <input id="am-end" type="text" placeholder="Rua, número, bairro, cidade">
-      </div>
-      <div class="am-field">
-        <label>Telefone / WhatsApp</label>
-        <input id="am-tel" type="tel" placeholder="(95) 99999-9999">
-      </div>
-      <div class="am-field">
-        <label>Tempo de Garantia</label>
-        <input id="am-garantia" type="text" placeholder="Ex: 12 meses, 6 meses…">
-      </div>
-    </div>
-    <div class="am-footer">
-      <button class="am-btn-cancel" onclick="assistFecharModal()">Cancelar</button>
-      <button class="am-btn-save" onclick="assistSalvar()">Salvar</button>
-    </div>
-  </div>
 </div>
 
 <!-- ★ MAIN -->
@@ -1207,7 +1167,7 @@ function assistRenderizar() {
   if (!filtradas.length) {
     grid.innerHTML = `<div class="assist-empty">
       <div class="assist-empty-icon">🔧</div>
-      <p>${lista.length ? 'Nenhuma assistência encontrada.' : 'Nenhuma assistência cadastrada ainda.<br>Clique em <strong>Nova Assistência</strong> para adicionar.'}</p>
+      <p>${lista.length ? 'Nenhuma assistência encontrada.' : 'Nenhuma assistência cadastrada.<br>Edite o arquivo <strong>assistencias.txt</strong> e rode ATUALIZAR_PORTAL.bat'}</p>
     </div>`;
     return;
   }
@@ -1224,10 +1184,6 @@ function assistRenderizar() {
       <div class="ac-head">
         <span class="ac-marca-nome">${marca}</span>
         <span class="ac-badge">🔧 ASSIST.</span>
-        <div class="ac-actions">
-          <button class="ac-act-btn" onclick="assistEditar('${id}')">✏️</button>
-          <button class="ac-act-btn del" onclick="assistExcluir('${id}')">🗑</button>
-        </div>
       </div>
       <div class="ac-sep"></div>
       <div class="ac-nome">${nome}</div>
