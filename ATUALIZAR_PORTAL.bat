@@ -22,8 +22,8 @@ if not defined PYTHON (
     pause & exit /b 1
 )
 
-:: ── PASSO 1: Gerar dados e copiar imagens ───────────────────
-echo [1/3] Exportando dados e imagens do ERP...
+:: ── PASSO 1: Gerar dados, imagens e assistencias ─────────────
+echo [1/4] Exportando dados e imagens do ERP...
 echo.
 %PYTHON% "..\data\export_portal.py" --auto
 if errorlevel 1 (
@@ -32,12 +32,15 @@ if errorlevel 1 (
     pause & exit /b 1
 )
 
+echo [2/4] Convertendo assistencias.txt para assistencias.json...
+%PYTHON% "gerar_assistencias.py"
+
 :: ── PASSO 2: Adicionar arquivos ao git ──────────────────────
 echo.
-echo [2/3] Preparando envio para o GitHub...
+echo [3/4] Preparando envio para o GitHub...
 
 :: Dados atualizados
-git add portal_data.json imagens_drive.json
+git add portal_data.json imagens_drive.json assistencias.json assistencias.txt
 
 :: Imagens: adicionar novas E remover deletadas (git add -A rastreia tudo)
 echo   Sincronizando imagens (novas + removidas)...
@@ -45,7 +48,7 @@ git add -A imagens\
 
 :: ── PASSO 3: Commit e push (somente se houver mudancas) ──────
 echo.
-echo [3/3] Publicando no portal...
+echo [4/4] Publicando no portal...
 
 git diff --cached --quiet
 if errorlevel 1 (

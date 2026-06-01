@@ -530,10 +530,6 @@ body.tv #sup-panel { background: var(--bg); border-bottom-color: transparent; bo
       <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Nova Assistência
     </button>
-    <button onclick="assistConfigurarToken()" title="Configurar token GitHub para salvar em todos os dispositivos"
-      style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .2s"
-      onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'"
-      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">⚙️ Token</button>
   </div>
   <div class="assist-filters" id="assist-filters"></div>
   <div class="assist-grid" id="assist-grid"></div>
@@ -1106,15 +1102,14 @@ setInterval(carregarDados,      5 * 60 * 1000);
 setInterval(carregarDriveMap,  60 * 60 * 1000);
 
 // ════════════════════════════════════════════════════════════
-// ASSISTÊNCIAS TÉCNICAS
 // ════════════════════════════════════════════════════════════
-const ASSIST_KEY    = 'galpaodoaco_assistencias_v1';
-const GH_TOKEN_KEY  = 'galpaodoaco_gh_token';
-const GH_REPO       = 'AndreyFigueredo/portal-galpaodoaco';
-const GH_FILE_PATH  = 'assistencias.json';
-let   _assistEdit   = null;
+// ASSISTÊNCIAS TÉCNICAS
+// Dados vêm do assistencias.json publicado no GitHub
+// Para adicionar/editar: edite assistencias.txt e rode ATUALIZAR_PORTAL.bat
+// ════════════════════════════════════════════════════════════
+const ASSIST_KEY = 'galpaodoaco_assistencias_v1';
+let   _assistEdit = null;
 
-// ── Cache local (fallback offline) ───────────────────────
 function assistCarregar() {
   try { return JSON.parse(localStorage.getItem(ASSIST_KEY) || '[]'); } catch { return []; }
 }
@@ -1122,97 +1117,19 @@ function assistSalvarLS(lista) {
   localStorage.setItem(ASSIST_KEY, JSON.stringify(lista));
 }
 
-// ── Token GitHub (admin) ──────────────────────────────────
-function ghToken() { return localStorage.getItem(GH_TOKEN_KEY) || ''; }
-
-function assistConfigurarToken() {
-  const atual = ghToken() ? '(já configurado — cole novo para substituir)' : '';
-  const token = prompt(
-    '🔑 Token GitHub para salvar assistências\n\n' +
-    'Como obter:\n' +
-    '1. github.com → clique no seu avatar → Settings\n' +
-    '2. Developer settings → Personal access tokens → Fine-grained tokens\n' +
-    '3. Clique "Generate new token"\n' +
-    '4. Em Repository access: selecione "portal-galpaodoaco"\n' +
-    '5. Em Permissions → Contents: Read and write\n' +
-    '6. Copie o token e cole aqui\n\n' + atual,
-    ''
-  );
-  if (token && token.trim()) {
-    localStorage.setItem(GH_TOKEN_KEY, token.trim());
-    alert('✅ Token salvo! Agora você pode cadastrar assistências de qualquer dispositivo.');
-  }
-}
-
-// ── Ler do GitHub API (sem token — público) ───────────────
+// Carregar do GitHub raw — funciona em qualquer dispositivo sem login
 async function assistCarregarGitHub() {
   try {
-    const r = await fetch(
-      `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE_PATH}`,
-      { headers: { 'Accept': 'application/vnd.github.v3+json' }, cache: 'no-store' }
-    );
+    const url = GITHUB_RAW + 'assistencias.json?_t=' + Date.now();
+    const r   = await fetch(url, { cache: 'no-store' });
     if (!r.ok) return null;
-    const meta = await r.json();
-    // Decodificar base64
-    const json = decodeURIComponent(escape(atob(meta.content.replace(/\n/g, ''))));
-    const dados = JSON.parse(json);
+    const dados = await r.json();
     if (Array.isArray(dados)) {
-      assistSalvarLS(dados); // atualizar cache local
-      return { dados, sha: meta.sha };
+      assistSalvarLS(dados);
+      return dados;
     }
-  } catch(e) { console.warn('[Assist] Erro ao ler GitHub:', e); }
+  } catch(e) { console.warn('[Assist] Erro ao carregar:', e); }
   return null;
-}
-
-// ── Salvar no GitHub via API (precisa de token) ───────────
-async function assistSalvarGitHub(lista) {
-  const token = ghToken();
-  if (!token) {
-    // Sem token: salvar só localmente e avisar
-    alert('⚠️ Token GitHub não configurado.\n\nAs assistências foram salvas neste dispositivo, mas não serão visíveis em outros.\n\nClique no ⚙️ para configurar o token.');
-    return false;
-  }
-
-  try {
-    // Buscar SHA atual (obrigatório para o PUT)
-    const metaResp = await fetch(
-      `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE_PATH}`,
-      { headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' } }
-    );
-    const meta = await metaResp.json();
-    const sha  = meta.sha;
-
-    // Codificar conteúdo em base64
-    const conteudo = JSON.stringify(lista, null, 2);
-    const b64 = btoa(unescape(encodeURIComponent(conteudo)));
-    const agora = new Date().toLocaleString('pt-BR');
-
-    const putResp = await fetch(
-      `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE_PATH}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Authorization': 'token ' + token,
-          'Content-Type': 'application/json',
-          'Accept': 'application/vnd.github.v3+json'
-        },
-        body: JSON.stringify({ message: 'Atualizar assistencias ' + agora, content: b64, sha })
-      }
-    );
-
-    if (putResp.ok) {
-      console.log('[Assist] Salvo no GitHub com sucesso!');
-      return true;
-    } else {
-      const err = await putResp.json();
-      console.error('[Assist] Erro GitHub:', err);
-      alert('❌ Erro ao salvar no GitHub: ' + (err.message || putResp.status) + '\n\nVerifique se o token está correto.');
-    }
-  } catch(e) {
-    console.error('[Assist] Erro:', e);
-    alert('❌ Erro de conexão ao salvar. Verifique sua internet.');
-  }
-  return false;
 }
 
 // Ativar/desativar aba
@@ -1379,7 +1296,7 @@ function assistSalvar() {
   assistFecharModal();
   assistRenderizar();
   // Salvar no GitHub (qualquer dispositivo, inclusive celular)
-  assistSalvarGitHub(lista);
+
 }
 
 function assistExcluir(id) {
@@ -1387,7 +1304,7 @@ function assistExcluir(id) {
   const lista = assistCarregar().filter(a => a.id !== id);
   assistSalvarLS(lista);
   assistRenderizar();
-  assistSalvarGitHub(lista);
+
 }
 </script>
 </body>

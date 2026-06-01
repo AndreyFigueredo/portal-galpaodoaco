@@ -1,0 +1,18 @@
+# ASSISTENCIAS TECNICAS - GALPAO DO ACO
+# Formato: preencha os campos abaixo para cada assistencia
+# Use --- para separar cada assistencia
+# Campos: MARCA | NOME | ENDERECO | TELEFONE | GARANTIA
+# Linhas com # sao ignoradas
+
+MARCA: MAKITA
+NOME: Assistencia Tecnica Central
+ENDERECO: Rua das Ferramentas, 123, Centro, Boa Vista-RR
+TELEFONE: (95) 99999-9999
+GARANTIA: 12 meses
+---
+MARCA: PRESSURE
+NOME: Eletro Pecas e Servicos
+ENDERECO: Av. Brasil, 456, Carana, Boa Vista-RR
+TELEFONE: (95) 98888-8888
+GARANTIA: 6 meses
+---
