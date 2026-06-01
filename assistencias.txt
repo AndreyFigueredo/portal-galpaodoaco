@@ -16,6 +16,12 @@ ENDERECO: Av. Villy roy, 7239, São Viscente, Boa Vista-RR
 TELEFONE: (95) 99152-3053
 GARANTIA: 6 meses
 ---
+MARCA: SCHULS
+NOME: ELETRO MOTORES
+ENDERECO: Av. Villy roy, 7239, São Viscente, Boa Vista-RR
+TELEFONE: (95) 99152-3053
+GARANTIA: 6 meses
+---
 MARCA: TOYAMA
 NOME: IRAMAQ ASSISTÊNCIA
 ENDERECO: Av. Av. Ville Roy, 7303 - São Vicente, Boa Vista-RR
@@ -39,3 +45,15 @@ NOME: SOMTEC - ABRAÃO
 ENDERECO: Av. dos Imigrantes, 234 - Buritis, Boa Vista-RR
 TELEFONE: (95) 98101-8064
 GARANTIA: 12 meses
+---
+MARCA: DENVER
+NOME: SOMTEC - ABRAÃO
+ENDERECO: Av. dos Imigrantes, 234 - Buritis, Boa Vista-RR
+TELEFONE: (95) 98101-8064
+GARANTIA: 12 meses
+---
+MARCA: MARCON 
+NOME: NAIRA ASSISTÊNCIA 
+ENDERECO: Rua das Estrelas, 227 - Raiar do Sol, Ao lado da oficina Esotec. Boa Vista-RR 
+TELEFONE: (95) 99126-8516
+GARANTIA: 6 meses

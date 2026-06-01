@@ -16,6 +16,14 @@
     "id": "9134564f2ef5"
   },
   {
+    "marca": "SCHULS",
+    "nome": "ELETRO MOTORES",
+    "endereco": "Av. Villy roy, 7239, São Viscente, Boa Vista-RR",
+    "telefone": "(95) 99152-3053",
+    "garantia": "6 meses",
+    "id": "2da776f89fda"
+  },
+  {
     "marca": "TOYAMA",
     "nome": "IRAMAQ ASSISTÊNCIA",
     "endereco": "Av. Av. Ville Roy, 7303 - São Vicente, Boa Vista-RR",
@@ -46,5 +54,21 @@
     "telefone": "(95) 98101-8064",
     "garantia": "12 meses",
     "id": "d9192c441e23"
+  },
+  {
+    "marca": "DENVER",
+    "nome": "SOMTEC - ABRAÃO",
+    "endereco": "Av. dos Imigrantes, 234 - Buritis, Boa Vista-RR",
+    "telefone": "(95) 98101-8064",
+    "garantia": "12 meses",
+    "id": "715e05c99b7b"
+  },
+  {
+    "marca": "MARCON",
+    "nome": "NAIRA ASSISTÊNCIA",
+    "endereco": "Rua das Estrelas, 227 - Raiar do Sol, Ao lado da oficina Esotec. Boa Vista-RR",
+    "telefone": "(95) 99126-8516",
+    "garantia": "6 meses",
+    "id": "456d46ec73df"
   }
 ]
