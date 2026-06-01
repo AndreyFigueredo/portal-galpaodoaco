@@ -320,6 +320,144 @@ body.tv #timer-bar { top: 0; }
 body.tv #main { top: 4px; }
 body.tv #sup-nome { font-size: clamp(2rem, 4.5vw, 3.6rem); }
 body.tv #sup-panel { background: var(--bg); border-bottom-color: transparent; box-shadow: none; }
+
+/* ── BOTÃO ASSISTÊNCIAS ──────────────────────────────── */
+#btn-assist {
+  background: #f3f4f6; border: 1.5px solid var(--border);
+  color: var(--muted); padding: 7px 14px; border-radius: 8px;
+  cursor: pointer; font-size: 0.8rem; font-family: inherit; font-weight: 600;
+  transition: all .2s; white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+#btn-assist:hover, #btn-assist.active {
+  background: #fff0f0; color: var(--primary); border-color: var(--primary);
+}
+#btn-assist svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+/* ── PÁGINA ASSISTÊNCIAS ─────────────────────────────── */
+#assist-page {
+  position: fixed; top: 74px; left: 0; right: 0; bottom: 0;
+  background: var(--bg); overflow-y: auto; display: none; z-index: 200;
+  padding: 24px 28px;
+}
+.assist-topbar {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 22px; flex-wrap: wrap;
+}
+.assist-topbar h2 {
+  font-size: 1.2rem; font-weight: 800; color: var(--text); flex: 1;
+}
+.assist-search {
+  border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 14px;
+  font-size: 13px; font-family: inherit; outline: none; width: 220px;
+  transition: border-color .2s;
+}
+.assist-search:focus { border-color: var(--primary); }
+.btn-add-assist {
+  background: var(--primary); color: #fff; border: none; border-radius: 8px;
+  padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: inherit; display: flex; align-items: center; gap: 6px;
+  transition: background .2s;
+}
+.btn-add-assist:hover { background: var(--primary2); }
+
+/* Filtro de marcas */
+.assist-filters {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.af-btn {
+  background: #fff; border: 1.5px solid var(--border); border-radius: 20px;
+  padding: 5px 14px; font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: inherit; color: var(--muted); transition: all .18s;
+}
+.af-btn:hover { border-color: var(--primary); color: var(--primary); }
+.af-btn.ativo { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+/* Grid de cards */
+.assist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.assist-card {
+  background: #fff; border-radius: 12px; padding: 18px 20px;
+  border: 1.5px solid var(--border); position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  transition: box-shadow .2s, border-color .2s;
+}
+.assist-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #d1d5db; }
+.assist-card-marca {
+  display: inline-block; background: var(--primary); color: #fff;
+  font-size: 10px; font-weight: 800; letter-spacing: .06em;
+  padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; text-transform: uppercase;
+}
+.assist-card-nome {
+  font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 10px;
+  line-height: 1.3;
+}
+.assist-card-row {
+  display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px;
+  font-size: 12.5px; color: #4b5563;
+}
+.assist-card-row svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 1px;
+  stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; }
+.assist-card-garantia {
+  margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border);
+  font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 6px;
+}
+.assist-card-garantia strong { color: #16a34a; }
+.assist-card-actions {
+  position: absolute; top: 14px; right: 14px; display: flex; gap: 6px;
+}
+.assist-act-btn {
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 4px 8px; cursor: pointer; font-size: 11px; color: var(--muted);
+  transition: all .15s;
+}
+.assist-act-btn:hover { border-color: var(--primary); color: var(--primary); }
+.assist-act-btn.del:hover { border-color: #dc2626; color: #dc2626; }
+
+/* Estado vazio */
+.assist-empty {
+  grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--muted);
+}
+.assist-empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.assist-empty p { font-size: 14px; }
+
+/* ── MODAL ───────────────────────────────────────────── */
+#assist-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 500;
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+#assist-modal-overlay.open { display: flex; }
+#assist-modal {
+  background: #fff; border-radius: 14px; width: 100%; max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden;
+}
+.am-header {
+  background: var(--primary); color: #fff; padding: 18px 22px;
+  font-size: 15px; font-weight: 800; display: flex; justify-content: space-between; align-items: center;
+}
+.am-close { background: none; border: none; color: rgba(255,255,255,.8); font-size: 20px;
+  cursor: pointer; line-height: 1; padding: 0 4px; }
+.am-close:hover { color: #fff; }
+.am-body { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+.am-field { display: flex; flex-direction: column; gap: 5px; }
+.am-field label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.am-field input, .am-field select {
+  border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px;
+  font-size: 13.5px; font-family: inherit; outline: none; color: var(--text);
+  transition: border-color .2s;
+}
+.am-field input:focus, .am-field select:focus { border-color: var(--primary); }
+.am-footer { padding: 0 22px 20px; display: flex; gap: 10px; justify-content: flex-end; }
+.am-btn-cancel {
+  background: #f3f4f6; border: none; border-radius: 8px; padding: 9px 20px;
+  font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; color: var(--muted);
+}
+.am-btn-save {
+  background: var(--primary); color: #fff; border: none; border-radius: 8px;
+  padding: 9px 22px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.am-btn-save:hover { background: var(--primary2); }
 </style>
 </head>
 <body>
@@ -344,11 +482,67 @@ body.tv #sup-panel { background: var(--bg); border-bottom-color: transparent; bo
     <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
     <span id="btn-atualizar-txt">Atualizar</span>
   </button>
+  <button id="btn-assist" onclick="toggleAssist()">
+    <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+    Assistências
+  </button>
   <button id="btn-tv" onclick="toggleTV()">⬛ TV</button>
 </div>
 
 <!-- ★ TIMER -->
 <div id="timer-bar"><div id="timer-fill"></div></div>
+
+<!-- ★ ASSISTÊNCIAS TÉCNICAS -->
+<div id="assist-page">
+  <div class="assist-topbar">
+    <h2>🔧 Assistências Técnicas</h2>
+    <input class="assist-search" id="assist-search" placeholder="Buscar assistência ou marca…" oninput="assistRenderizar()">
+    <button class="btn-add-assist" onclick="assistAbrirModal()">
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nova Assistência
+    </button>
+  </div>
+  <div class="assist-filters" id="assist-filters"></div>
+  <div class="assist-grid" id="assist-grid"></div>
+</div>
+
+<!-- ★ MODAL CADASTRO -->
+<div id="assist-modal-overlay" onclick="if(event.target===this)assistFecharModal()">
+  <div id="assist-modal">
+    <div class="am-header">
+      <span id="am-title">Nova Assistência Técnica</span>
+      <button class="am-close" onclick="assistFecharModal()">✕</button>
+    </div>
+    <div class="am-body">
+      <div class="am-field">
+        <label>Marca</label>
+        <select id="am-marca">
+          <option value="">Selecione ou digite abaixo…</option>
+        </select>
+      </div>
+      <div class="am-field">
+        <label>Nome da Assistência</label>
+        <input id="am-nome" type="text" placeholder="Ex: Assistência Central Boa Vista">
+      </div>
+      <div class="am-field">
+        <label>Endereço</label>
+        <input id="am-end" type="text" placeholder="Rua, número, bairro, cidade">
+      </div>
+      <div class="am-field">
+        <label>Telefone / WhatsApp</label>
+        <input id="am-tel" type="tel" placeholder="(95) 99999-9999">
+      </div>
+      <div class="am-field">
+        <label>Tempo de Garantia</label>
+        <input id="am-garantia" type="text" placeholder="Ex: 12 meses, 6 meses…">
+      </div>
+    </div>
+    <div class="am-footer">
+      <button class="am-btn-cancel" onclick="assistFecharModal()">Cancelar</button>
+      <button class="am-btn-save" onclick="assistSalvar()">Salvar</button>
+    </div>
+  </div>
+</div>
 
 <!-- ★ MAIN -->
 <div id="main">
@@ -878,6 +1072,169 @@ async function clicarAtualizar() {
 carregarDriveMap().then(() => carregarDados());
 setInterval(carregarDados,      5 * 60 * 1000);
 setInterval(carregarDriveMap,  60 * 60 * 1000);
+
+// ════════════════════════════════════════════════════════════
+// ASSISTÊNCIAS TÉCNICAS
+// ════════════════════════════════════════════════════════════
+const ASSIST_KEY  = 'galpaodoaco_assistencias_v1';
+let   _assistEdit = null; // id do registro sendo editado
+
+function assistCarregar() {
+  try { return JSON.parse(localStorage.getItem(ASSIST_KEY) || '[]'); } catch { return []; }
+}
+function assistSalvarLS(lista) {
+  localStorage.setItem(ASSIST_KEY, JSON.stringify(lista));
+}
+
+// Ativar/desativar aba
+function toggleAssist() {
+  const page = document.getElementById('assist-page');
+  const btn  = document.getElementById('btn-assist');
+  const showing = page.style.display !== 'none';
+
+  if (showing) {
+    page.style.display = 'none';
+    btn.classList.remove('active');
+    // Retomar rotação do portal
+    if (FORN.length > 1) resetTimer();
+  } else {
+    page.style.display = 'block';
+    btn.classList.add('active');
+    // Pausar rotação
+    _timerSessao++;
+    assistRenderizar();
+    assistPopularMarcas();
+  }
+}
+
+// Popular select de marcas com as marcas do portal
+function assistPopularMarcas() {
+  const sel = document.getElementById('am-marca');
+  const marcasPortal = [...new Set(FORN.flatMap(f => f.prods.map(p => (p.descricao || '').split(' ')[0])))].sort();
+  // Usar marcas conhecidas dos fornecedores
+  const marcasAssist = [...new Set(assistCarregar().map(a => a.marca))].sort();
+  const todas = [...new Set([...marcasAssist, 'MAKITA','BOSCH','DEWALT','VONDER','TRAMONTINA','STARRETT','ATLAS','JOMARCA','DETONI','STAM','MARKON','TRON','PRESSURE','ANFIX'])].sort();
+
+  sel.innerHTML = '<option value="">— Selecione a marca —</option>'
+    + todas.map(m => `<option value="${m}">${m}</option>`).join('');
+}
+
+// Filtro ativo
+let _assistFiltroMarca = '';
+
+function assistRenderizar() {
+  const lista  = assistCarregar();
+  const busca  = (document.getElementById('assist-search')?.value || '').toLowerCase().trim();
+  const grid   = document.getElementById('assist-grid');
+  const filtersEl = document.getElementById('assist-filters');
+
+  // Marcas únicas para filtro
+  const marcas = [...new Set(lista.map(a => a.marca).filter(Boolean))].sort();
+  filtersEl.innerHTML = marcas.length
+    ? '<button class="af-btn' + (!_assistFiltroMarca ? ' ativo' : '') + '" onclick="assistFiltrar(\'\')">Todas</button>'
+      + marcas.map(m => `<button class="af-btn${_assistFiltroMarca===m?' ativo':''}" onclick="assistFiltrar('${m}')">${m}</button>`).join('')
+    : '';
+
+  // Filtrar
+  let filtradas = lista;
+  if (_assistFiltroMarca) filtradas = filtradas.filter(a => a.marca === _assistFiltroMarca);
+  if (busca) filtradas = filtradas.filter(a =>
+    (a.marca+a.nome+a.endereco+a.telefone+a.garantia).toLowerCase().includes(busca)
+  );
+
+  if (!filtradas.length) {
+    grid.innerHTML = `<div class="assist-empty">
+      <div class="assist-empty-icon">🔧</div>
+      <p>${lista.length ? 'Nenhuma assistência encontrada.' : 'Nenhuma assistência cadastrada ainda.<br>Clique em <strong>Nova Assistência</strong> para adicionar.'}</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtradas.map(a => `
+    <div class="assist-card">
+      <div class="assist-card-actions">
+        <button class="assist-act-btn" onclick="assistEditar('${a.id}')">✏️</button>
+        <button class="assist-act-btn del" onclick="assistExcluir('${a.id}')">🗑</button>
+      </div>
+      <div class="assist-card-marca">${escHtml(a.marca || '—')}</div>
+      <div class="assist-card-nome">${escHtml(a.nome || '—')}</div>
+      ${a.endereco ? `<div class="assist-card-row">
+        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        ${escHtml(a.endereco)}
+      </div>` : ''}
+      ${a.telefone ? `<div class="assist-card-row">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.17 1.22 2 2 0 012.15 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+        <a href="tel:${escHtml(a.telefone)}" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none">${escHtml(a.telefone)}</a>
+      </div>` : ''}
+      ${a.garantia ? `<div class="assist-card-garantia">
+        🛡 Garantia: <strong>${escHtml(a.garantia)}</strong>
+      </div>` : ''}
+    </div>`).join('');
+}
+
+function assistFiltrar(marca) {
+  _assistFiltroMarca = marca;
+  assistRenderizar();
+}
+
+// Modal
+function assistAbrirModal(id) {
+  _assistEdit = id || null;
+  const modal = document.getElementById('assist-modal-overlay');
+  modal.classList.add('open');
+  document.getElementById('am-title').textContent = id ? 'Editar Assistência' : 'Nova Assistência Técnica';
+  assistPopularMarcas();
+
+  if (id) {
+    const a = assistCarregar().find(x => x.id === id);
+    if (a) {
+      document.getElementById('am-marca').value    = a.marca    || '';
+      document.getElementById('am-nome').value     = a.nome     || '';
+      document.getElementById('am-end').value      = a.endereco || '';
+      document.getElementById('am-tel').value      = a.telefone || '';
+      document.getElementById('am-garantia').value = a.garantia || '';
+    }
+  } else {
+    ['am-marca','am-nome','am-end','am-tel','am-garantia'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el.tagName === 'SELECT') el.value = '';
+      else el.value = '';
+    });
+  }
+}
+function assistEditar(id)  { assistAbrirModal(id); }
+function assistFecharModal() {
+  document.getElementById('assist-modal-overlay').classList.remove('open');
+  _assistEdit = null;
+}
+
+function assistSalvar() {
+  const marca    = document.getElementById('am-marca').value.trim();
+  const nome     = document.getElementById('am-nome').value.trim();
+  const endereco = document.getElementById('am-end').value.trim();
+  const telefone = document.getElementById('am-tel').value.trim();
+  const garantia = document.getElementById('am-garantia').value.trim();
+
+  if (!nome) { alert('Informe o nome da assistência.'); return; }
+  if (!marca){ alert('Selecione ou informe a marca.'); return; }
+
+  const lista = assistCarregar();
+  if (_assistEdit) {
+    const idx = lista.findIndex(x => x.id === _assistEdit);
+    if (idx >= 0) lista[idx] = { ...lista[idx], marca, nome, endereco, telefone, garantia };
+  } else {
+    lista.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2), marca, nome, endereco, telefone, garantia });
+  }
+  assistSalvarLS(lista);
+  assistFecharModal();
+  assistRenderizar();
+}
+
+function assistExcluir(id) {
+  if (!confirm('Excluir esta assistência?')) return;
+  assistSalvarLS(assistCarregar().filter(a => a.id !== id));
+  assistRenderizar();
+}
 </script>
 </body>
 </html>
