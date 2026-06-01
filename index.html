@@ -1104,14 +1104,52 @@ setInterval(carregarDriveMap,  60 * 60 * 1000);
 // ════════════════════════════════════════════════════════════
 // ASSISTÊNCIAS TÉCNICAS
 // ════════════════════════════════════════════════════════════
-const ASSIST_KEY  = 'galpaodoaco_assistencias_v1';
-let   _assistEdit = null; // id do registro sendo editado
+const ASSIST_KEY     = 'galpaodoaco_assistencias_v1';
+const GITHUB_ASSIST  = GITHUB_RAW + 'assistencias.json';
+let   _assistEdit    = null;
+let   _assistSyncing = false;
 
 function assistCarregar() {
   try { return JSON.parse(localStorage.getItem(ASSIST_KEY) || '[]'); } catch { return []; }
 }
 function assistSalvarLS(lista) {
   localStorage.setItem(ASSIST_KEY, JSON.stringify(lista));
+}
+
+// Carregar dados do GitHub raw (shared entre todos os PCs)
+async function assistCarregarRemoto() {
+  try {
+    const r = await fetch(GITHUB_ASSIST + '?_t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const dados = await r.json();
+    if (Array.isArray(dados) && dados.length > 0) {
+      // Mesclar: remoto prevalece; itens locais sem ID remoto são mantidos
+      const remotos  = new Set(dados.map(a => a.id));
+      const locais   = assistCarregar().filter(a => !remotos.has(a.id));
+      const mesclado = [...dados, ...locais];
+      assistSalvarLS(mesclado);
+      return mesclado;
+    }
+  } catch(e) {}
+}
+
+// Salvar no servidor local (que commita + push para GitHub)
+async function assistSalvarRemoto(lista) {
+  try {
+    const r = await fetch('http://localhost:5050/api/assistencias', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lista),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (r.ok) {
+      console.log('[Assistencias] Publicado no GitHub via servidor local.');
+      return true;
+    }
+  } catch(e) {
+    console.warn('[Assistencias] Servidor local indisponível — salvo apenas localmente.');
+  }
+  return false;
 }
 
 // Ativar/desativar aba
@@ -1132,6 +1170,8 @@ function toggleAssist() {
     _timerSessao++;
     assistRenderizar();
     assistPopularMarcas();
+    // Carregar dados remotos (GitHub) em background
+    assistCarregarRemoto().then(dados => { if (dados) assistRenderizar(); });
   }
 }
 
@@ -1275,12 +1315,16 @@ function assistSalvar() {
   assistSalvarLS(lista);
   assistFecharModal();
   assistRenderizar();
+  // Salvar remotamente (publica no GitHub automaticamente se servidor local estiver ativo)
+  assistSalvarRemoto(lista);
 }
 
 function assistExcluir(id) {
   if (!confirm('Excluir esta assistência?')) return;
-  assistSalvarLS(assistCarregar().filter(a => a.id !== id));
+  const lista = assistCarregar().filter(a => a.id !== id);
+  assistSalvarLS(lista);
   assistRenderizar();
+  assistSalvarRemoto(lista);
 }
 </script>
 </body>
