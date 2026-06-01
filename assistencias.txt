@@ -22,11 +22,17 @@ ENDERECO: Av. Av. Ville Roy, 7303 - São Vicente, Boa Vista-RR
 TELEFONE: (95) 99138-1423
 GARANTIA: 6 meses
 ---
-MARCA: CSM 
+MARCA: CSM - FERRAMENTAS		 
 NOME: TORQUATO
 ENDERECO: R. Pedro Vasconcelos, 547 - Liberdade, Boa Vista-RR
 TELEFONE: (95) 98109-2763
 GARANTIA: 12 meses
+---
+MARCA: CSM - BETONEIRAS		 
+NOME: TORQUATO
+ENDERECO: R. Pedro Vasconcelos, 547 - Liberdade, Boa Vista-RR
+TELEFONE: (95) 98109-2763
+GARANTIA: 6 meses
 ---
 MARCA: BOXER 
 NOME: SOMTEC - ABRAÃO

@@ -24,12 +24,20 @@
     "id": "8b0e4f84acdc"
   },
   {
-    "marca": "CSM",
+    "marca": "CSM - FERRAMENTAS",
     "nome": "TORQUATO",
     "endereco": "R. Pedro Vasconcelos, 547 - Liberdade, Boa Vista-RR",
     "telefone": "(95) 98109-2763",
     "garantia": "12 meses",
-    "id": "05398a470a73"
+    "id": "bdab08356cd2"
+  },
+  {
+    "marca": "CSM - BETONEIRAS",
+    "nome": "TORQUATO",
+    "endereco": "R. Pedro Vasconcelos, 547 - Liberdade, Boa Vista-RR",
+    "telefone": "(95) 98109-2763",
+    "garantia": "6 meses",
+    "id": "e1aa21be5770"
   },
   {
     "marca": "BOXER",
