@@ -57,3 +57,9 @@ NOME: NAIRA ASSISTÊNCIA
 ENDERECO: Rua das Estrelas, 227 - Raiar do Sol, Ao lado da oficina Esotec. Boa Vista-RR 
 TELEFONE: (95) 99126-8516
 GARANTIA: 6 meses
+---
+MARCA: TRON
+NOME: UTI.DOS FOGÕES INDÚSTRIAS 
+ENDERECO: R. dos Ipês, 221 - Pricumã, Boa Vista-RR 
+TELEFONE: (95) 99150-5808
+GARANTIA: 6 meses
