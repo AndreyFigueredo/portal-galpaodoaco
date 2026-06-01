@@ -5,14 +5,31 @@
 # Linhas com # sao ignoradas
 
 MARCA: MAKITA
-NOME: Assistencia Tecnica Central
-ENDERECO: Rua das Ferramentas, 123, Centro, Boa Vista-RR
-TELEFONE: (95) 99999-9999
+NOME: TORQUATO
+ENDERECO: R. Pedro Vasconcelos, 547 - Liberdade, Boa Vista-RR
+TELEFONE: (95) 98109-2763
 GARANTIA: 12 meses
 ---
 MARCA: PRESSURE
-NOME: Eletro Pecas e Servicos
-ENDERECO: Av. Brasil, 456, Carana, Boa Vista-RR
-TELEFONE: (95) 98888-8888
+NOME: ELETRO MOTORES
+ENDERECO: Av. Villy roy, 7239, São Viscente, Boa Vista-RR
+TELEFONE: (95) 99152-3053
 GARANTIA: 6 meses
 ---
+MARCA: TOYAMA
+NOME: IRAMAQ ASSISTÊNCIA
+ENDERECO: Av. Av. Ville Roy, 7303 - São Vicente, Boa Vista-RR
+TELEFONE: (95) 99138-1423
+GARANTIA: 6 meses
+---
+MARCA: CSM 
+NOME: TORQUATO
+ENDERECO: R. Pedro Vasconcelos, 547 - Liberdade, Boa Vista-RR
+TELEFONE: (95) 98109-2763
+GARANTIA: 12 meses
+---
+MARCA: BOXER 
+NOME: SOMTEC - ABRAÃO
+ENDERECO: Av. dos Imigrantes, 234 - Buritis, Boa Vista-RR
+TELEFONE: (95) 98101-8064
+GARANTIA: 12 meses

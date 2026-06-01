@@ -1,18 +1,42 @@
 [
   {
     "marca": "MAKITA",
-    "nome": "Assistencia Tecnica Central",
-    "endereco": "Rua das Ferramentas, 123, Centro, Boa Vista-RR",
-    "telefone": "(95) 99999-9999",
+    "nome": "TORQUATO",
+    "endereco": "R. Pedro Vasconcelos, 547 - Liberdade, Boa Vista-RR",
+    "telefone": "(95) 98109-2763",
     "garantia": "12 meses",
-    "id": "1e553d27e683"
+    "id": "2d1b2f7a0019"
   },
   {
     "marca": "PRESSURE",
-    "nome": "Eletro Pecas e Servicos",
-    "endereco": "Av. Brasil, 456, Carana, Boa Vista-RR",
-    "telefone": "(95) 98888-8888",
+    "nome": "ELETRO MOTORES",
+    "endereco": "Av. Villy roy, 7239, São Viscente, Boa Vista-RR",
+    "telefone": "(95) 99152-3053",
     "garantia": "6 meses",
-    "id": "571e15848bc0"
+    "id": "9134564f2ef5"
+  },
+  {
+    "marca": "TOYAMA",
+    "nome": "IRAMAQ ASSISTÊNCIA",
+    "endereco": "Av. Av. Ville Roy, 7303 - São Vicente, Boa Vista-RR",
+    "telefone": "(95) 99138-1423",
+    "garantia": "6 meses",
+    "id": "8b0e4f84acdc"
+  },
+  {
+    "marca": "CSM",
+    "nome": "TORQUATO",
+    "endereco": "R. Pedro Vasconcelos, 547 - Liberdade, Boa Vista-RR",
+    "telefone": "(95) 98109-2763",
+    "garantia": "12 meses",
+    "id": "05398a470a73"
+  },
+  {
+    "marca": "BOXER",
+    "nome": "SOMTEC - ABRAÃO",
+    "endereco": "Av. dos Imigrantes, 234 - Buritis, Boa Vista-RR",
+    "telefone": "(95) 98101-8064",
+    "garantia": "12 meses",
+    "id": "d9192c441e23"
   }
 ]
