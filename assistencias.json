@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "marca": "MAKITA",
+    "nome": "Assistencia Tecnica Central",
+    "endereco": "Rua das Ferramentas, 123, Centro, Boa Vista-RR",
+    "telefone": "(95) 99999-9999",
+    "garantia": "12 meses",
+    "id": "1e553d27e683"
+  },
+  {
+    "marca": "PRESSURE",
+    "nome": "Eletro Pecas e Servicos",
+    "endereco": "Av. Brasil, 456, Carana, Boa Vista-RR",
+    "telefone": "(95) 98888-8888",
+    "garantia": "6 meses",
+    "id": "571e15848bc0"
+  }
+]
