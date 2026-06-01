@@ -1192,25 +1192,33 @@ function assistRenderizar() {
     return;
   }
 
-  grid.innerHTML = filtradas.map(a => `
+  grid.innerHTML = filtradas.map(a => {
+    const marca    = esc(a.marca    || '—');
+    const nome     = esc(a.nome     || '—');
+    const endereco = esc(a.endereco || '');
+    const telefone = esc(a.telefone || '');
+    const garantia = esc(a.garantia || '');
+    const id       = esc(a.id || '');
+    return `
     <div class="assist-card">
       <div class="ac-head">
-        <span class="ac-marca-nome">${escHtml(a.marca || '—')}</span>
+        <span class="ac-marca-nome">${marca}</span>
         <span class="ac-badge">🔧 ASSIST.</span>
         <div class="ac-actions">
-          <button class="ac-act-btn" onclick="event.stopPropagation();assistEditar('${a.id}')">✏️</button>
-          <button class="ac-act-btn del" onclick="event.stopPropagation();assistExcluir('${a.id}')">🗑</button>
+          <button class="ac-act-btn" onclick="assistEditar('${id}')">✏️</button>
+          <button class="ac-act-btn del" onclick="assistExcluir('${id}')">🗑</button>
         </div>
       </div>
       <div class="ac-sep"></div>
-      <div class="ac-nome">${escHtml(a.nome || '—')}</div>
-      ${(a.endereco || a.telefone) ? `<div class="ac-infos">
-        ${a.endereco ? `<div class="ac-row"><span class="ac-row-icon">📍</span><span>${escHtml(a.endereco)}</span></div>` : ''}
-        ${a.telefone ? `<div class="ac-row"><span class="ac-row-icon">📞</span><a href="tel:${escHtml(a.telefone)}" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none">${escHtml(a.telefone)}</a></div>` : ''}
-      </div>` : ''}
-      ${a.garantia ? `<div class="ac-garantia">🛡 ${escHtml(a.garantia)}</div>` : ''}
+      <div class="ac-nome">${nome}</div>
+      ${endereco || telefone ? '<div class="ac-infos">'
+        + (endereco ? '<div class="ac-row"><span class="ac-row-icon">📍</span><span>' + endereco + '</span></div>' : '')
+        + (telefone ? '<div class="ac-row"><span class="ac-row-icon">📞</span><a href="tel:' + telefone + '" style="color:inherit;text-decoration:none">' + telefone + '</a></div>' : '')
+        + '</div>' : ''}
+      ${garantia ? '<div class="ac-garantia">🛡 ' + garantia + '</div>' : ''}
       <div class="ac-footer">Assistência técnica autorizada</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function assistFiltrar(marca) {
