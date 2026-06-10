@@ -746,7 +746,10 @@ function agrupar(prenotas, leadTimes) {
     const nomeRaw = String(p.nome_fornecedor||'').trim() || 'Fornecedor não identificado';
     const idc   = p.idclifor;
     const nome  = aplicarAlias(idc, nomeRaw);
-    const chave = idc != null ? 'id:'+idc : nome.toUpperCase();
+    // Se houve alias, agrupar pelo nome aliasado (une todos os idclifor do mesmo fornecedor)
+    // Se não houve alias, agrupar por idclifor para máxima precisão
+    const foiAliasado = nome !== nomeRaw;
+    const chave = foiAliasado ? nome.toUpperCase() : (idc != null ? 'id:'+idc : nome.toUpperCase());
 
     if (!mapa.has(chave)) {
       let lt = idc != null ? (ltIdx['id:'+idc]||0) : 0;
@@ -1041,33 +1044,10 @@ async function carregarDados() {
     if (el) el.textContent = 'Atualizado: ' + data.gerado_em;
   }
 
-  const prenotas  = (data.prenota_detalhes || []).map(p => ({...p, tipo:'prenota'}));
-  const leadTimes = data.lead_time_fornec  || [];
+  const prenotas  = data.prenota_detalhes || [];
+  const leadTimes = data.lead_time_fornec || [];
 
-  // Normalizar pedidos de compra para o mesmo formato flat dos items de pré-nota
-  const itensped = [];
-  for (const ped of (data.pedidos || [])) {
-    for (const it of (ped.itens || [])) {
-      itensped.push({
-        idnota:         ped.idpedido,
-        idempresa:      ped.idempresa,
-        dtmovimento:    ped.dtmovimento,
-        idsubproduto:   it.idsubproduto,
-        descricao:      it.descricao,
-        unidade:        it.unidade,
-        qtdproduto:     it.qtdsolicitada,
-        vlrunitario:    it.valunitario,
-        vlrtotal:       it.valtotliquido,
-        num_nf:         'PED-' + ped.idpedido,
-        idclifor:       ped.idclifor,
-        nome_fornecedor: ped.nome_fornecedor,
-        tipo:           'pedido',
-        dtentrega:      ped.dtentrega || null,
-      });
-    }
-  }
-
-  FORN = agrupar([...prenotas, ...itensped], leadTimes);
+  FORN = agrupar(prenotas, leadTimes);
   console.log('Fornecedores em transito:', FORN.length,
     '| Produtos:', FORN.reduce((s,g)=>s+g.prods.length, 0));
 
