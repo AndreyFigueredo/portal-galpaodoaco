@@ -120,9 +120,12 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
   background: #fee2e2; padding: 3px 12px; border-radius: 999px;
 }
 #sup-transit-label {
-  font-size: 0.68rem; color: var(--muted); font-weight: 600;
-  margin-left: 4px; white-space: nowrap;
+  font-size: 0.68rem; font-weight: 700; margin-left: 4px; white-space: nowrap;
+  padding: 2px 10px; border-radius: 999px; letter-spacing: .06em; text-transform: uppercase;
 }
+#sup-transit-label.tipo-prenota { background: #fef9c3; color: #a16207; }
+#sup-transit-label.tipo-pedido  { background: #dbeafe; color: #1d4ed8; }
+#sup-transit-label.tipo-misto   { background: #f3e8ff; color: #6d28d9; }
 
 #forn-select-wrap {
   display: flex; align-items: center; gap: 8px; margin-left: auto;
@@ -551,7 +554,7 @@ body.tv #sup-panel { background: var(--bg); border-bottom-color: transparent; bo
         <button class="snav-btn" onclick="nav(+1)" title="Próximo">›</button>
       </div>
       <span id="sup-counter">1 / 1</span>
-      <span id="sup-transit-label">🚢 EM TRÂNSITO</span>
+      <span id="sup-transit-label" class="tipo-prenota">🚛 EM TRÂNSITO</span>
       <div id="forn-select-wrap">
         <label for="forn-select">Ir para fornecedor:</label>
         <select id="forn-select" onchange="ir(this.selectedIndex)">
@@ -563,13 +566,13 @@ body.tv #sup-panel { background: var(--bg); border-bottom-color: transparent; bo
     <div id="sup-nome">—</div>
 
     <div id="sup-tags">
-      <div class="stag">📋 NF&nbsp;<b id="t-nf">—</b></div>
+      <div class="stag"><span id="t-ref-label">📋 NF</span>&nbsp;<b id="t-nf">—</b></div>
       <div class="stag-sep"></div>
       <div class="stag"><b id="t-qtd">—</b>&nbsp;produto(s)</div>
       <div class="stag-sep"></div>
-      <div class="stag">Emitida&nbsp;<b id="t-data">—</b></div>
+      <div class="stag"><span id="t-data-label">Emitida</span>&nbsp;<b id="t-data">—</b></div>
       <div class="stag-sep"></div>
-      <div class="stag"><b id="t-dias">—</b>&nbsp;dias em trânsito</div>
+      <div class="stag"><b id="t-dias">—</b>&nbsp;<span id="t-dias-label">dias em trânsito</span></div>
     </div>
 
     <div id="prog-row">
@@ -748,11 +751,21 @@ function agrupar(prenotas, leadTimes) {
     if (!mapa.has(chave)) {
       let lt = idc != null ? (ltIdx['id:'+idc]||0) : 0;
       if (!lt) lt = ltIdx[nome.toUpperCase()] || LT_DEFAULT;
-      mapa.set(chave, { nome, idc, lt, dtmin: p.dtmovimento||null, nfs: new Set(), prods: [] });
+      mapa.set(chave, { nome, idc, lt, dtmin: p.dtmovimento||null,
+                        nfs: new Set(), peds: new Set(), prods: [],
+                        tipos: new Set(), dtentrega: null });
     }
     const g = mapa.get(chave);
     if (p.dtmovimento && (!g.dtmin || p.dtmovimento < g.dtmin)) g.dtmin = p.dtmovimento;
-    if (p.num_nf) g.nfs.add(String(p.num_nf));
+    const tipo = p.tipo || 'prenota';
+    g.tipos.add(tipo);
+    if (tipo === 'pedido') {
+      if (p.num_nf) g.peds.add(String(p.idnota));
+      // Usar a data de entrega mais próxima do futuro
+      if (p.dtentrega && (!g.dtentrega || p.dtentrega < g.dtentrega)) g.dtentrega = p.dtentrega;
+    } else {
+      if (p.num_nf) g.nfs.add(String(p.num_nf));
+    }
     const cod = String(p.idsubproduto||'');
     if (!g.prods.some(x => String(x.idsubproduto) === cod)) g.prods.push(p);
   }
@@ -828,12 +841,38 @@ function _preencher(g) {
   document.getElementById('sup-counter').textContent = (idx+1)+' / '+FORN.length;
   document.getElementById('sup-nome').textContent = g.nome;
 
-  const nfsArr = [...g.nfs].slice(0,4);
-  document.getElementById('t-nf').textContent    = nfsArr.length ? nfsArr.join(', ')+(g.nfs.size>4?' +'+(g.nfs.size-4):'') : '—';
+  // Badge e labels dinâmicos por tipo
+  const tipos   = g.tipos || new Set(['prenota']);
+  const temPed  = tipos.has('pedido');
+  const temNota = tipos.has('prenota');
+  const isMisto = temPed && temNota;
+  const badge   = document.getElementById('sup-transit-label');
+  if (badge) {
+    badge.className = isMisto ? 'tipo-misto' : (temPed ? 'tipo-pedido' : 'tipo-prenota');
+    badge.textContent = isMisto ? '🔀 MISTO' : (temPed ? '📋 PEDIDO' : '🚛 EM TRÂNSITO');
+  }
+
+  // Referência (NF ou Pedido)
+  const refLbl = document.getElementById('t-ref-label');
+  if (temPed && !temNota) {
+    const pedsArr = [...(g.peds||new Set())].slice(0,4);
+    document.getElementById('t-nf').textContent = pedsArr.length ? pedsArr.join(', ')+(g.peds.size>4?' +'+(g.peds.size-4):'') : '—';
+    if (refLbl) refLbl.textContent = '🛒 Ped.';
+  } else {
+    const nfsArr = [...g.nfs].slice(0,4);
+    document.getElementById('t-nf').textContent = nfsArr.length ? nfsArr.join(', ')+(g.nfs.size>4?' +'+(g.nfs.size-4):'') : '—';
+    if (refLbl) refLbl.textContent = '📋 NF';
+  }
+
   document.getElementById('t-qtd').textContent   = g.prods.length;
   document.getElementById('t-data').textContent  = fmtDt(g.dtmin);
+  const dataLbl = document.getElementById('t-data-label');
+  if (dataLbl) dataLbl.textContent = temPed && !temNota ? 'Pedido' : 'Emitida';
+
   const dec = decorridos(g.dtmin);
   document.getElementById('t-dias').textContent  = dec;
+  const diasLbl = document.getElementById('t-dias-label');
+  if (diasLbl) diasLbl.textContent = temPed && !temNota ? 'dias aguardando' : 'dias em trânsito';
 
   // Progress
   const pct = g.lt > 0 ? Math.min(99, Math.round((dec / g.lt) * 100)) : 0;
@@ -860,7 +899,18 @@ function _preencher(g) {
   pctEl.style.color = textClr;
 
   const lbl = document.getElementById('prog-label');
-  if (g.lt > 0 && g.dtmin) {
+  // Para pedidos com data de entrega definida, usar dtentrega real
+  if (temPed && !temNota && g.dtentrega) {
+    const hoje    = new Date().toISOString().slice(0,10);
+    const restDias = Math.round((new Date(g.dtentrega) - new Date(hoje)) / 86400000);
+    if (restDias <= 0) {
+      lbl.textContent = '⚠️ Prazo de entrega atingido';
+      lbl.style.color = '#ef4444';
+    } else {
+      lbl.textContent = `Entrega prevista: ${fmtDt(g.dtentrega)} · ${restDias}d restantes`;
+      lbl.style.color = 'var(--muted)';
+    }
+  } else if (g.lt > 0 && g.dtmin) {
     const rest = Math.max(0, g.lt - dec);
     if (pct >= 99) {
       lbl.textContent = '⚠️ Prazo estimado atingido';
@@ -870,7 +920,7 @@ function _preencher(g) {
       lbl.style.color = 'var(--muted)';
     }
   } else {
-    lbl.textContent = 'Lead time não configurado';
+    lbl.textContent = temPed && !temNota ? 'Data de entrega não informada' : 'Lead time não configurado';
     lbl.style.color = 'var(--muted)';
   }
 
@@ -991,10 +1041,33 @@ async function carregarDados() {
     if (el) el.textContent = 'Atualizado: ' + data.gerado_em;
   }
 
-  const prenotas  = data.prenota_detalhes  || [];
+  const prenotas  = (data.prenota_detalhes || []).map(p => ({...p, tipo:'prenota'}));
   const leadTimes = data.lead_time_fornec  || [];
 
-  FORN = agrupar(prenotas, leadTimes);
+  // Normalizar pedidos de compra para o mesmo formato flat dos items de pré-nota
+  const itensped = [];
+  for (const ped of (data.pedidos || [])) {
+    for (const it of (ped.itens || [])) {
+      itensped.push({
+        idnota:         ped.idpedido,
+        idempresa:      ped.idempresa,
+        dtmovimento:    ped.dtmovimento,
+        idsubproduto:   it.idsubproduto,
+        descricao:      it.descricao,
+        unidade:        it.unidade,
+        qtdproduto:     it.qtdsolicitada,
+        vlrunitario:    it.valunitario,
+        vlrtotal:       it.valtotliquido,
+        num_nf:         'PED-' + ped.idpedido,
+        idclifor:       ped.idclifor,
+        nome_fornecedor: ped.nome_fornecedor,
+        tipo:           'pedido',
+        dtentrega:      ped.dtentrega || null,
+      });
+    }
+  }
+
+  FORN = agrupar([...prenotas, ...itensped], leadTimes);
   console.log('Fornecedores em transito:', FORN.length,
     '| Produtos:', FORN.reduce((s,g)=>s+g.prods.length, 0));
 
