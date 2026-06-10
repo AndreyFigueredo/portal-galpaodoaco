@@ -616,6 +616,32 @@ const LT_DEFAULT = 30;   // lead time padrão em dias
 let _primeiraVez   = true; // randomizar idx só na primeira carga
 
 // ════════════════════════════════════════════════════════════
+// ALIAS DE FORNECEDORES
+// Quando o CISS registra o distribuidor em vez da marca real,
+// use este mapa para exibir o nome correto.
+// Chave: idclifor (número) ou nome exato do CISS (string maiúscula)
+// ════════════════════════════════════════════════════════════
+const FORN_ALIAS = {
+  // Por idclifor (mais específico — preferido)
+  by_id: {
+    1788: 'ASSA ABLOY',
+    947:  'ASSA ABLOY',
+    4529: 'ASSA ABLOY',
+    1203: 'ASSA ABLOY',
+  },
+  // Por nome exato do CISS (fallback)
+  by_nome: {
+    'METALURGICA DE TONI LTDA': 'ASSA ABLOY',
+  },
+};
+
+function aplicarAlias(idclifor, nomeOriginal) {
+  if (idclifor != null && FORN_ALIAS.by_id[idclifor]) return FORN_ALIAS.by_id[idclifor];
+  const nu = (nomeOriginal||'').trim().toUpperCase();
+  return FORN_ALIAS.by_nome[nu] || nomeOriginal;
+}
+
+// ════════════════════════════════════════════════════════════
 // RELÓGIO
 // ════════════════════════════════════════════════════════════
 function tick() {
@@ -714,8 +740,9 @@ function agrupar(prenotas, leadTimes) {
 
   const mapa = new Map();
   for (const p of (prenotas||[])) {
-    const nome  = String(p.nome_fornecedor||'').trim() || 'Fornecedor não identificado';
+    const nomeRaw = String(p.nome_fornecedor||'').trim() || 'Fornecedor não identificado';
     const idc   = p.idclifor;
+    const nome  = aplicarAlias(idc, nomeRaw);
     const chave = idc != null ? 'id:'+idc : nome.toUpperCase();
 
     if (!mapa.has(chave)) {
