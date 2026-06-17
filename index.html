@@ -906,7 +906,7 @@ function _preencher(g) {
     const cor    = _corPct(pct);
     let lblTxt, lblClr;
     if (g.lt > 0 && dt) {
-      const rest = Math.max(0, g.lt - decNF);
+      const rest = Math.round(Math.max(0, g.lt - decNF));
       if (pct >= 99) { lblTxt = '⚠️ Prazo estimado atingido'; lblClr = '#ef4444'; }
       else           { lblTxt = `Previsão: ${addDias(dt, g.lt)} · ${rest}d restantes`; lblClr = 'var(--muted)'; }
     } else {
