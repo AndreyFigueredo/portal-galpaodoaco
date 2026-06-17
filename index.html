@@ -163,15 +163,26 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
 .stag-sep { width: 4px; height: 4px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
 
 /* ── PROGRESS BAR ────────────────────────────────────── */
-#prog-row {
+#prog-rows {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.prog-nf-meta {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.75rem; color: var(--muted); margin-bottom: 3px;
+}
+.prog-nf-num { font-weight: 700; color: var(--text); }
+.prog-row {
   display: flex; align-items: center; gap: 14px;
 }
-#prog-track {
+#prog-row { /* legado — manter compatibilidade */
+  display: flex; align-items: center; gap: 14px;
+}
+#prog-track, .prog-track {
   flex: 1; max-width: 520px; height: 10px;
   background: #f3f4f6; border-radius: 20px;
   overflow: visible; position: relative;
 }
-#prog-bar {
+#prog-bar, .prog-bar {
   height: 100%; border-radius: 20px;
   transition: width 1s cubic-bezier(.4,0,.2,1), background .5s;
   position: relative;
@@ -184,10 +195,10 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
   transition: filter .5s;
   pointer-events: none; user-select: none;
 }
-#prog-pct {
+#prog-pct, .prog-pct {
   font-size: 0.9rem; font-weight: 800; min-width: 44px; text-align: right;
 }
-#prog-label {
+#prog-label, .prog-lbl {
   font-size: 0.78rem; color: var(--muted); font-weight: 500; white-space: nowrap;
 }
 
@@ -575,15 +586,7 @@ body.tv #sup-panel { background: var(--bg); border-bottom-color: transparent; bo
       <div class="stag"><b id="t-dias">—</b>&nbsp;<span id="t-dias-label">dias em trânsito</span></div>
     </div>
 
-    <div id="prog-row">
-      <div id="prog-track">
-        <div id="prog-bar">
-          <span id="prog-truck">🚚</span>
-        </div>
-      </div>
-      <span id="prog-pct">—</span>
-      <span id="prog-label">—</span>
-    </div>
+    <div id="prog-rows"><!-- barras por NF geradas dinamicamente --></div>
 
   </div><!-- /sup-panel -->
 
@@ -756,7 +759,8 @@ function agrupar(prenotas, leadTimes) {
       let lt = idc != null ? (ltIdx['id:'+idc]||0) : 0;
       if (!lt) lt = ltIdx[nome.toUpperCase()] || LT_DEFAULT;
       mapa.set(chave, { nome, idc, lt, dtmin: p.dtmovimento||null,
-                        nfs: new Set(), peds: new Set(), prods: [],
+                        nfs: new Set(), notasDates: new Map(),
+                        peds: new Set(), prods: [],
                         tipos: new Set(), dtentrega: null });
     }
     const g = mapa.get(chave);
@@ -768,7 +772,15 @@ function agrupar(prenotas, leadTimes) {
       // Usar a data de entrega mais próxima do futuro
       if (p.dtentrega && (!g.dtentrega || p.dtentrega < g.dtentrega)) g.dtentrega = p.dtentrega;
     } else {
-      if (p.num_nf) g.nfs.add(String(p.num_nf));
+      if (p.num_nf) {
+        const nf = String(p.num_nf);
+        g.nfs.add(nf);
+        const dt = p.dtmovimento || null;
+        // guarda a data mais antiga de cada NF (em caso de múltiplos itens)
+        if (!g.notasDates.has(nf) || (dt && dt < g.notasDates.get(nf))) {
+          g.notasDates.set(nf, dt);
+        }
+      }
     }
     const cod = String(p.idsubproduto||'');
     if (!g.prods.some(x => String(x.idsubproduto) === cod)) g.prods.push(p);
@@ -878,54 +890,78 @@ function _preencher(g) {
   const diasLbl = document.getElementById('t-dias-label');
   if (diasLbl) diasLbl.textContent = temPed && !temNota ? 'dias aguardando' : 'dias em trânsito';
 
-  // Progress
-  const pct = g.lt > 0 ? Math.min(99, Math.round((dec / g.lt) * 100)) : 0;
-  let barClr, glowClr, textClr;
-  if (pct >= 90) {
-    barClr = 'linear-gradient(90deg,#ef4444,#f87171)'; glowClr='#ef4444'; textClr='#ef4444';
-  } else if (pct >= 65) {
-    barClr = 'linear-gradient(90deg,#f59e0b,#fbbf24)'; glowClr='#f59e0b'; textClr='#f59e0b';
-  } else {
-    barClr = 'linear-gradient(90deg,var(--primary),#ff6b6b)'; glowClr='var(--primary)'; textClr='var(--primary)';
-  }
-  const bar = document.getElementById('prog-bar');
-  bar.style.width      = pct + '%';
-  bar.style.background = barClr;
-  bar.style.boxShadow  = `0 0 10px ${glowClr}`;
+  // ── Barras de progresso — uma por NF ──────────────────────
+  const progRows = document.getElementById('prog-rows');
+  progRows.innerHTML = '';
 
-  const truck = document.getElementById('prog-truck');
-  if (truck) {
-    truck.style.filter  = `drop-shadow(0 0 8px ${glowClr})`;
-    truck.style.display = pct > 1 ? '' : 'none';
-  }
-  const pctEl = document.getElementById('prog-pct');
-  pctEl.textContent = pct + '%';
-  pctEl.style.color = textClr;
+  const _corPct = pct => {
+    if (pct >= 90) return { bar:'linear-gradient(90deg,#ef4444,#f87171)', glow:'#ef4444', txt:'#ef4444' };
+    if (pct >= 65) return { bar:'linear-gradient(90deg,#f59e0b,#fbbf24)', glow:'#f59e0b', txt:'#f59e0b' };
+    return { bar:'linear-gradient(90deg,var(--primary),#ff6b6b)', glow:'var(--primary)', txt:'var(--primary)' };
+  };
 
-  const lbl = document.getElementById('prog-label');
-  // Para pedidos com data de entrega definida, usar dtentrega real
-  if (temPed && !temNota && g.dtentrega) {
-    const hoje    = new Date().toISOString().slice(0,10);
-    const restDias = Math.round((new Date(g.dtentrega) - new Date(hoje)) / 86400000);
-    if (restDias <= 0) {
-      lbl.textContent = '⚠️ Prazo de entrega atingido';
-      lbl.style.color = '#ef4444';
+  const _mkBarra = (nf, dt) => {
+    const decNF  = dt ? decorridos(dt) : dec;
+    const pct    = g.lt > 0 ? Math.min(99, Math.round((decNF / g.lt) * 100)) : 0;
+    const cor    = _corPct(pct);
+    let lblTxt, lblClr;
+    if (g.lt > 0 && dt) {
+      const rest = Math.max(0, g.lt - decNF);
+      if (pct >= 99) { lblTxt = '⚠️ Prazo estimado atingido'; lblClr = '#ef4444'; }
+      else           { lblTxt = `Previsão: ${addDias(dt, g.lt)} · ${rest}d restantes`; lblClr = 'var(--muted)'; }
     } else {
-      lbl.textContent = `Entrega prevista: ${fmtDt(g.dtentrega)} · ${restDias}d restantes`;
-      lbl.style.color = 'var(--muted)';
+      lblTxt = 'Lead time não configurado'; lblClr = 'var(--muted)';
     }
-  } else if (g.lt > 0 && g.dtmin) {
-    const rest = Math.max(0, g.lt - dec);
-    if (pct >= 99) {
-      lbl.textContent = '⚠️ Prazo estimado atingido';
-      lbl.style.color = '#ef4444';
-    } else {
-      lbl.textContent = `Previsão: ${addDias(g.dtmin, g.lt)} · ${rest}d restantes`;
-      lbl.style.color = 'var(--muted)';
-    }
+
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <div class="prog-nf-meta">
+        <span class="prog-nf-num">📋 NF ${nf}</span>
+        <span>${dt ? fmtDt(dt) + ' · ' + decNF + 'd em trânsito' : '—'}</span>
+      </div>
+      <div class="prog-row">
+        <div class="prog-track">
+          <div class="prog-bar" style="width:${pct}%;background:${cor.bar};box-shadow:0 0 10px ${cor.glow}">
+            <span class="prog-truck" style="filter:drop-shadow(0 0 8px ${cor.glow});${pct<=1?'display:none':''}">🚚</span>
+          </div>
+        </div>
+        <span class="prog-pct" style="color:${cor.txt}">${pct}%</span>
+        <span class="prog-lbl" style="color:${lblClr}">${lblTxt}</span>
+      </div>`;
+    progRows.appendChild(wrap);
+  };
+
+  if (temNota && g.notasDates && g.notasDates.size > 0) {
+    // Uma barra por NF, ordenadas pela data (mais antiga primeiro)
+    const notasOrdenadas = [...g.notasDates.entries()].sort((a,b) => (a[1]||'') < (b[1]||'') ? -1 : 1);
+    for (const [nf, dt] of notasOrdenadas) _mkBarra(nf, dt);
   } else {
-    lbl.textContent = temPed && !temNota ? 'Data de entrega não informada' : 'Lead time não configurado';
-    lbl.style.color = 'var(--muted)';
+    // Fallback: barra única usando dtmin geral
+    const pct = g.lt > 0 ? Math.min(99, Math.round((dec / g.lt) * 100)) : 0;
+    const cor = _corPct(pct);
+    let lblTxt = 'Lead time não configurado', lblClr = 'var(--muted)';
+    if (temPed && !temNota && g.dtentrega) {
+      const hoje = new Date().toISOString().slice(0,10);
+      const rest = Math.round((new Date(g.dtentrega) - new Date(hoje)) / 86400000);
+      if (rest <= 0) { lblTxt = '⚠️ Prazo de entrega atingido'; lblClr = '#ef4444'; }
+      else           { lblTxt = `Entrega prevista: ${fmtDt(g.dtentrega)} · ${rest}d restantes`; lblClr = 'var(--muted)'; }
+    } else if (g.lt > 0 && g.dtmin) {
+      const rest = Math.max(0, g.lt - dec);
+      if (pct >= 99) { lblTxt = '⚠️ Prazo estimado atingido'; lblClr = '#ef4444'; }
+      else           { lblTxt = `Previsão: ${addDias(g.dtmin, g.lt)} · ${rest}d restantes`; lblClr = 'var(--muted)'; }
+    }
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <div class="prog-row">
+        <div class="prog-track">
+          <div class="prog-bar" style="width:${pct}%;background:${cor.bar};box-shadow:0 0 10px ${cor.glow}">
+            <span class="prog-truck" style="filter:drop-shadow(0 0 8px ${cor.glow});${pct<=1?'display:none':''}">🚚</span>
+          </div>
+        </div>
+        <span class="prog-pct" style="color:${cor.txt}">${pct}%</span>
+        <span class="prog-lbl" style="color:${lblClr}">${lblTxt}</span>
+      </div>`;
+    progRows.appendChild(wrap);
   }
 
   // Selector sync
