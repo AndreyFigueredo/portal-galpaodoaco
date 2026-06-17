@@ -3,7 +3,6 @@
   "name": "portal-galpaodoaco",
   "buildCommand": null,
   "outputDirectory": ".",
-  "public": true,
   "rewrites": [
     { "source": "/", "destination": "/index.html" }
   ],
