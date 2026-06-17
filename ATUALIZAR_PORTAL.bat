@@ -1,72 +1,162 @@
 @echo off
 setlocal enabledelayedexpansion
-title Portal Galpao do Aco - Atualizar
+title Portal Galpao do Aco - Atualizacao Completa
+color 0A
+
+echo.
+echo ============================================================
+echo   ATUALIZACAO COMPLETA DO PORTAL - GALPAO DO ACO
+echo   1. Exportar dados (pre-notas + imagens)
+echo   2. Verificar fornecedores das pre-notas
+echo   3. Publicar no Vercel via Git
+echo ============================================================
+echo.
+
 cd /d "%~dp0"
 
-echo.
-echo ============================================================
-echo   ATUALIZACAO DO PORTAL - GALPAO DO ACO
-echo ============================================================
-echo.
-
-:: ── Verificar Python ────────────────────────────────────────
+:: ── Verificar Python ──────────────────────────────────────────
 set "PYTHON="
-for %%P in (py python python3) do (
-    if not defined PYTHON (
-        where %%P >nul 2>&1
-        if not errorlevel 1 set "PYTHON=%%P"
-    )
+where py     >nul 2>&1 && set "PYTHON=py"     && goto :py_ok
+where python >nul 2>&1 && set "PYTHON=python" && goto :py_ok
+where python3>nul 2>&1 && set "PYTHON=python3"&& goto :py_ok
+echo ERRO: Python nao encontrado!
+pause & exit /b 1
+:py_ok
+echo Python encontrado: %PYTHON%
+
+:: ── PASSO 1: Buscar dados frescos do CISS ─────────────────────
+echo.
+echo [1/4] Buscando pre-notas atualizadas do CISS (DB2)...
+echo --------------------------------------------------------
+%PYTHON% "%~dp0..\data\extract.py"
+if errorlevel 1 (
+    echo.
+    echo  AVISO: Erro na extracao do banco. Continuando com dados existentes...
 )
-if not defined PYTHON (
-    echo ERRO: Python nao encontrado!
+
+echo.
+echo [2/4] Processando dados...
+echo --------------------------------------------------------
+%PYTHON% "%~dp0..\data\process.py"
+if errorlevel 1 (
+    echo.
+    echo  ERRO no processamento!
     pause & exit /b 1
 )
 
-:: ── PASSO 1: Gerar dados, imagens e assistencias ─────────────
-echo [1/4] Exportando dados e imagens do ERP...
+:: ── PASSO 2: Exportar portal_data.json + copiar imagens ───────
 echo.
-%PYTHON% "..\data\export_portal.py" --auto
+echo [3/4] Exportando para o portal (portal_data.json + imagens)...
+echo --------------------------------------------------------
+%PYTHON% "%~dp0..\data\export_portal.py" --auto
 if errorlevel 1 (
     echo.
-    echo ERRO na exportacao. Certifique-se de rodar run.bat antes.
+    echo  ERRO na exportacao!
     pause & exit /b 1
 )
 
-echo [2/4] Convertendo assistencias.txt para assistencias.json...
-%PYTHON% "gerar_assistencias.py"
-
-:: ── PASSO 2: Adicionar arquivos ao git ──────────────────────
+:: ── PASSO 3: Verificar fornecedores das pre-notas ─────────────
 echo.
-echo [3/4] Preparando envio para o GitHub...
+echo [verificacao] Fornecedores das pre-notas geradas...
+echo --------------------------------------------------------
+%PYTHON% -c "
+import json, os
+portal = os.path.join(os.path.dirname(os.path.abspath('%~f0'.replace('\\\\','/'))), 'portal_data.json')
 
-:: Dados atualizados
-git add portal_data.json imagens_drive.json assistencias.json assistencias.txt
+try:
+    with open(portal, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+except Exception as e:
+    print('  AVISO: nao foi possivel ler portal_data.json:', e)
+    exit(0)
 
-:: Imagens: adicionar novas E remover deletadas (git add -A rastreia tudo)
-echo   Sincronizando imagens (novas + removidas)...
-git add -A imagens\
+itens = data.get('prenota_detalhes', [])
+if not itens:
+    print('  Nenhuma pre-nota encontrada no arquivo.')
+    exit(0)
 
-:: ── PASSO 3: Commit e push (somente se houver mudancas) ──────
+# Agrupar por fornecedor
+forn = {}
+for it in itens:
+    nome = (it.get('nome_fornecedor') or '').strip() or '(SEM NOME)'
+    idc  = it.get('idclifor')
+    chave = nome
+    if chave not in forn:
+        forn[chave] = {'idclifor': idc, 'notas': set(), 'itens': 0}
+    nf = it.get('num_nf')
+    if nf:
+        forn[chave]['notas'].add(nf)
+    forn[chave]['itens'] += 1
+
+print(f'  Total de itens    : {len(itens)}')
+print(f'  Total fornecedores: {len(forn)}')
+print()
+print('  FORNECEDOR                                    | ID     | NFs | Itens')
+print('  ' + '-'*72)
+for nome, v in sorted(forn.items()):
+    idc  = str(v['idclifor'] or '-')
+    nfs  = len(v['notas'])
+    its  = v['itens']
+    aviso = ' << SEM NOME' if nome == '(SEM NOME)' else ''
+    print(f'  {nome[:44]:<44} | {idc:<6} | {nfs:<3} | {its}{aviso}')
+" 2>&1
+
 echo.
-echo [4/4] Publicando no portal...
+echo  Se aparecer fornecedores com nome errado, avise para corrigir o alias.
 
-git diff --cached --quiet
-if errorlevel 1 (
-    for /f "tokens=2-4 delims=/ " %%a in ('date /t') do set dt=%%c-%%b-%%a
-    for /f "tokens=1 delims=: " %%a in ('time /t') do set hr=%%a
-    git commit -m "Atualizar portal %dt% %hr%h (%imgcount% img nova(s))"
-    git push
+:: ── PASSO 3: Git add + commit + push ──────────────────────────
+echo.
+echo [publicar] Publicando no Vercel via Git...
+echo --------------------------------------------------------
 
+:: Verificar se ha algo para commitar
+git status --short > "%TEMP%\_portal_git_status.txt" 2>&1
+set /p GIT_STATUS=<"%TEMP%\_portal_git_status.txt"
+del "%TEMP%\_portal_git_status.txt" 2>nul
+
+git add -A
+
+:: Contar arquivos staged
+for /f %%C in ('git diff --cached --name-only ^| find /c /v ""') do set STAGED=%%C
+
+if "%STAGED%"=="0" (
     echo.
-    echo ============================================================
-    echo   PORTAL ATUALIZADO! Deploy iniciado no Vercel.
-    echo   Aguarde ~30 segundos e acesse:
-    echo   https://portal-galpaodoaco.vercel.app
-    echo ============================================================
-) else (
-    echo.
-    echo   Nenhuma mudanca detectada. Portal ja esta atualizado.
+    echo  Nenhuma alteracao detectada. Portal ja esta atualizado!
+    goto :fim
 )
 
+echo  %STAGED% arquivo(s) para publicar...
+
+:: Data/hora para mensagem do commit
+for /f "tokens=1-5 delims=/ " %%a in ('echo %DATE%') do (
+    set DIA=%%c
+    set MES=%%b
+    set ANO=%%d
+)
+for /f "tokens=1-2 delims=:." %%a in ('echo %TIME%') do (
+    set HH=%%a
+    set MM=%%b
+)
+set "MSG=Atualizar portal %DIA%/%MES%/%ANO% %HH%:%MM%"
+
+git commit -m "%MSG%"
+if errorlevel 1 (
+    echo  ERRO no commit!
+    pause & exit /b 1
+)
+
+git push
+if errorlevel 1 (
+    echo.
+    echo  ERRO no push! Verifique sua conexao e tente novamente.
+    pause & exit /b 1
+)
+
+:fim
+echo.
+echo ============================================================
+echo  CONCLUIDO! Aguarde ~1 minuto e acesse:
+echo  https://portal-galpaodoaco.vercel.app/
+echo ============================================================
 echo.
 pause
