@@ -104,53 +104,11 @@ for nome, v in sorted(forn.items()):
 echo.
 echo  Se aparecer fornecedores com nome errado, avise para corrigir o alias.
 
-:: ── PASSO 3: Git add + commit + push ──────────────────────────
+:: ── PASSO 3: Git add + commit + push (via PUBLICAR_GIT.bat) ────
 echo.
 echo [publicar] Publicando no Vercel via Git...
 echo --------------------------------------------------------
-
-:: Verificar se ha algo para commitar
-git status --short > "%TEMP%\_portal_git_status.txt" 2>&1
-set /p GIT_STATUS=<"%TEMP%\_portal_git_status.txt"
-del "%TEMP%\_portal_git_status.txt" 2>nul
-
-git add -A
-
-:: Contar arquivos staged
-for /f %%C in ('git diff --cached --name-only ^| find /c /v ""') do set STAGED=%%C
-
-if "%STAGED%"=="0" (
-    echo.
-    echo  Nenhuma alteracao detectada. Portal ja esta atualizado!
-    goto :fim
-)
-
-echo  %STAGED% arquivo(s) para publicar...
-
-:: Data/hora para mensagem do commit
-for /f "tokens=1-5 delims=/ " %%a in ('echo %DATE%') do (
-    set DIA=%%c
-    set MES=%%b
-    set ANO=%%d
-)
-for /f "tokens=1-2 delims=:." %%a in ('echo %TIME%') do (
-    set HH=%%a
-    set MM=%%b
-)
-set "MSG=Atualizar portal %DIA%/%MES%/%ANO% %HH%:%MM%"
-
-git commit -m "%MSG%"
-if errorlevel 1 (
-    echo  ERRO no commit!
-    pause & exit /b 1
-)
-
-git push
-if errorlevel 1 (
-    echo.
-    echo  ERRO no push! Verifique sua conexao e tente novamente.
-    pause & exit /b 1
-)
+call "%~dp0PUBLICAR_GIT.bat"
 
 :fim
 echo.
